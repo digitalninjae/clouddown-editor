@@ -52,3 +52,11 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# Claude / Agent
+.sessions
+
+# Rider
+.idea/
+# Reqnroll-generated code-behind for .feature files
+*.feature.cs
