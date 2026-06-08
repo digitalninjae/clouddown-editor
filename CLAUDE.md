@@ -67,6 +67,16 @@ Each platform implements native text editing controls:
 - Windows: RichEditBox with syntax highlighting
 - macOS: NSTextView with attributed string rendering
 
+## Git Workflow
+
+**All commits must be made on a dedicated work/feature/improvement branch — never commit
+directly to `main` or `dev`.**
+
+- Before starting any change, create a branch off the appropriate base (typically `dev`),
+  e.g. `feature/markdown-editor-control`, `fix/cursor-jump-android`, `improvement/ci-matrix`.
+- Use a `type/short-description` naming convention: `feature/`, `fix/`, or `improvement/`.
+- Open a pull request to merge the branch back; do not push commits straight to `main`/`dev`.
+
 ## Coding Guidelines
 
 ### C# Code Style
