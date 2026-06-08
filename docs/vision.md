@@ -16,7 +16,7 @@
 
 ## 1. Problem Statement
 
-.NET MAUI has no first-class, reusable Markdown **editing** control. Apps that need
+.NET MAUI doesn't have a first-class, reusable Markdown **editing** control. Apps that need
 Markdown editing today must either:
 
 - embed a **WebView** + JavaScript editor (heavy, non-native feel, poor accessibility,
@@ -34,11 +34,11 @@ can add in minutes.**
 
 ## 3. Target Users
 
-| Persona | Description | Primary need |
-|---|---|---|
+| Persona | Description                                                                                             | Primary need |
+|---|---------------------------------------------------------------------------------------------------------|---|
 | **App developer (integrator)** | A .NET MAUI developer building an app that needs Markdown editing. The primary customer of the library. | A reliable, well-documented, drop-in control with a clean bindable API and MVVM support. |
-| **End user (of the host app)** | The person actually typing Markdown inside an app that embeds the control. | A fast, native, accessible writing experience across modes. |
-| **CloudDown app** | The first-party consumer; this library is extracted from it. | Feature-complete editor it can depend on without reinventing editing. |
+| **End user (of the host app)** | The person actually typing Markdown inside an app that embeds the control.                              | A fast, native, accessible writing experience across modes. |
+| **CloudDown app** | The first-party consumer; this library is being/was created for it.                                     | Feature-complete editor it can depend on without reinventing editing. |
 
 ## 4. Goals & Objectives
 
@@ -60,12 +60,20 @@ can add in minutes.**
 - Markdown processing (CommonMark + GitHub Flavored Markdown) via Markdig.
 - Native platform handlers for Android, iOS, Windows, macOS (Mac Catalyst).
 - A public, bindable, MVVM-friendly API and an extensible theming surface.
+- **Extensibility hooks for host-driven text decorations and annotations** — a public API
+  that lets a host app decorate arbitrary text ranges (e.g. squiggly underlines for
+  spell-check, highlights, inline markers) and respond to interaction with them. The library
+  *renders and manages* decorations through this API; it does **not** implement the features
+  that drive them (see the word-processor non-goal below).
 - A sample app and automated test suite demonstrating usage.
 
 ### Out of scope (non-goals)
 - **Cloud storage / sync** — the responsibility of the consuming app (e.g. CloudDown).
 - **File management** (open/save/browse) — the library handles editor controls only.
 - **A full document/word-processor** — this is a Markdown editor, not a rich-text suite.
+  Word-processing *features* (spell-check, grammar, track-changes, and similar) belong to the
+  host app (e.g. CloudDown). The library does not implement them; instead it exposes
+  extensibility hooks (see In scope) so the host can build them on top of the editing surface.
 
 > **Future candidates (not non-goals):** real-time collaboration is *not* ruled out — it
 > is deferred to the [roadmap](roadmap.md) as a future candidate rather than a v1/v2 commitment.
@@ -75,6 +83,10 @@ can add in minutes.**
 - **Native over convenient** — prefer platform-native controls even when a cross-platform
   shortcut exists. (See [ADR 0001](architecture/adr/0001-native-controls-no-webview.md).)
 - **Library, not application** — no concerns that belong to the host app leak in.
+- **Extensible, not all-inclusive** — where a capability belongs to the host app, provide a
+  clean API hook rather than implementing the feature. The library owns the editing surface
+  and its extension points; the host owns higher-level document behavior (spell-check,
+  grammar, etc.). *Provide the hook, not the feature.*
 - **Testable core** — platform-independent logic lives behind UI-free services so it can
   be unit-tested on a plain .NET host.
 - **Stable public API** — avoid breaking changes in minor versions; the integrator's
