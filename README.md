@@ -425,13 +425,15 @@ Areas where we especially need help:
 - [ ] Image paste support
 - [ ] Custom syntax extensions
 - [ ] Export to PDF/HTML
-- [ ] Collaborative editing support
 
 ### v2.0 (Future)
 - [ ] Plugin system
 - [ ] Language server protocol support
 - [ ] Advanced theming engine
 - [ ] Split pane customization
+
+### Under consideration
+- [ ] Collaborative editing (future candidate — not yet committed to a release)
 
 ## License
 
