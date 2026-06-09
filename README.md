@@ -2,7 +2,7 @@
 
 A drop-in, fully native Markdown editor control for .NET MAUI.
 
-[![Build Main](https://github.com/digitalninjae/clouddown-editor/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/digitalninjae/clouddown-editor/actions/workflows/build.yml)
+[![Build](https://github.com/digitalninjae/clouddown-editor/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/digitalninjae/clouddown-editor/actions/workflows/build.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![Status: pre-1.0](https://img.shields.io/badge/status-pre--1.0%20·%20in%20development-orange)
 

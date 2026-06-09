@@ -80,17 +80,14 @@ Use **Mermaid** for diagrams (never ASCII art).
 **Prettier is the canonical Markdown formatter.** Its table style (aligned cells, `| --- |`
 separators) is intentional and not configurable, so don't let another tool fight it.
 
-- **Rider / other JetBrains IDEs**: Rider has **two separate** Markdown systems — _inspections_
-  and _formatting_ — and the table warning comes from the **inspection**, not the formatter.
-  - **To silence the warning** (the reliable fix): disable the **"Incorrect table formatting"**
-    inspection (id `MarkdownIncorrectTableFormatting`) at
-    Settings → Editor → Inspections → Markdown, or `Alt+Enter` on the warning → Configure
-    inspection severity → "Do not show". Rider stores this in the gitignored `.idea/` folder, so
-    each contributor sets it locally (it can't be committed). Enabling Prettier does **not**
-    silence this inspection — they are independent.
-  - _Optional convenience_: enable the Prettier integration so Rider auto-formats Markdown on
-    save (Settings → Languages & Frameworks → JavaScript → Prettier; point it at the repo's
-    `node_modules/prettier` and add `md` to "Run for files"). This only affects formatting.
+- **Rider / other JetBrains IDEs**: the repo's committed **`.editorconfig`** already disables the
+  Markdown table inspection (`resharper_markdown_incorrect_table_formatting = disabled`), so the
+  spurious **"Incorrect table formatting"** warning is silenced automatically — no per-contributor
+  setup needed. (Rider has two separate Markdown systems — _inspections_ and _formatting_ — and
+  that warning comes from the inspection, which Prettier does not affect.)
+    - _Optional convenience_: enable the Prettier integration so Rider auto-formats Markdown on
+      save (Settings → Languages & Frameworks → JavaScript → Prettier; point it at the repo's
+      `node_modules/prettier` and add `md` to "Run for files"). This only affects formatting.
 - **VS Code**: install the Prettier extension and set it as the default formatter for Markdown.
 
 ## Architecture Decision Records (ADRs)

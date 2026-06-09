@@ -2,13 +2,13 @@
 # A Windows runner can compile all platform target frameworks (Android, iOS,
 # Mac Catalyst, Windows). Producing signed iOS/Mac *app* packages would require
 # a macOS runner — that's a future enhancement, not needed to build the library.
-name: Build Main
+name: Build
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
 
 jobs:
   docs-format:

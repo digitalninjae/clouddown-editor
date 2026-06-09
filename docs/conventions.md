@@ -37,9 +37,10 @@
 - Leave the **metadata** table's header row blank (see [Documentation](#documentation)).
 - **Prettier is the canonical Markdown formatter** for this repo (`npm run format`), and CI
   enforces it (`npm run format:check`). Its table style — padded cells and `| --- |` separators —
-  is intentional and **not configurable**. Don't fight it with another tool: if your IDE flags
-  Prettier's tables (e.g. Rider's Markdown table inspection, which prefers compact `|---|`),
-  disable that inspection. See [CONTRIBUTING.md](../CONTRIBUTING.md) → _Editor setup_.
+  is intentional and **not configurable**. Don't fight it with another tool. The committed
+  `.editorconfig` already disables Rider's Markdown table inspection (which prefers compact
+  `|---|`), so it won't flag Prettier's tables; see [CONTRIBUTING.md](../CONTRIBUTING.md) →
+  _Editor setup_.
 
 ```markdown
 <!-- Avoid: ragged source -->
@@ -70,7 +71,14 @@
 
 ## Git & process
 
-- **Branch per change** (`feature/`, `fix/`, `improvement/`), merged via PR — see CLAUDE.md.
+- **Branch model** (Git Flow style): **`main`** is the release branch — it mirrors the last
+  published NuGet release and changes only via a release promotion; **`dev`** is the integration
+  base and the GitHub default branch. Both are protected (PR required; no force-push or deletion).
+  Full details in [CLAUDE.md](../CLAUDE.md) → _Git Workflow_.
+- **Branch per change** off `dev` (`feature/`, `fix/`, `improvement/`), merged into `dev` via PR.
+- **Release**: PR `dev` → `main`, then tag `main` `vX.Y.Z` (the tag drives the NuGet publish;
+  release immutability keeps it permanent).
+- **CI** (`build.yml`) runs on pushes and PRs to **both** `dev` and `main`.
 - **ADRs** stay `Proposed` until the maintainer reviews and approves — see CLAUDE.md and the
   [ADR log](architecture/adr/README.md).
 - **Testing**: NUnit + Reqnroll + AwesomeAssertions, BDD-led hybrid
@@ -81,4 +89,6 @@
 - **Central Package Management**: declare versions only in `Directory.Packages.props`; project
   `PackageReference`s carry no inline version
   ([ADR-0004](architecture/adr/0004-central-package-management.md)).
-- **Line endings** are normalized to LF via `.gitattributes`.
+- **Line endings** are normalized to LF — by `.gitattributes` (in git) and `.editorconfig`
+  (`end_of_line = lf`, in editors); `.editorconfig` also sets a final newline and the shared
+  indentation/charset defaults.
