@@ -30,7 +30,7 @@ By participating, you agree to uphold that Code of Conduct.
 ## Reporting
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be reported privately to
-the project maintainer at **`<INSERT CONDUCT CONTACT EMAIL>`**. All reports will be reviewed and
+the project maintainer at **32693609+digitalninjae@users.noreply.github.com**. All reports will be reviewed and
 investigated promptly and fairly, and the privacy and security of the reporter will be respected.
 
 ## Scope

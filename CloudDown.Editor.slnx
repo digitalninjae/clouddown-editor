@@ -1,4 +1,25 @@
 <Solution>
+  <Folder Name="/Documentation/">
+    <File Path="README.md" />
+    <File Path="CLAUDE.md" />
+    <File Path="CONTRIBUTING.md" />
+    <File Path="CODE_OF_CONDUCT.md" />
+    <File Path="SECURITY.md" />
+    <File Path="docs/vision.md" />
+    <File Path="docs/roadmap.md" />
+    <File Path="docs/conventions.md" />
+  </Folder>
+  <Folder Name="/Documentation/Architecture/">
+    <File Path="docs/architecture/overview.md" />
+  </Folder>
+  <Folder Name="/Documentation/Architecture/ADR/">
+    <File Path="docs/architecture/adr/README.md" />
+    <File Path="docs/architecture/adr/0001-native-controls-no-webview.md" />
+    <File Path="docs/architecture/adr/0002-test-stack.md" />
+    <File Path="docs/architecture/adr/0003-separate-core-project.md" />
+    <File Path="docs/architecture/adr/0004-central-package-management.md" />
+    <File Path="docs/architecture/adr/0005-core-may-depend-on-maui-graphics.md" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/CloudDown.Editor.Core/CloudDown.Editor.Core.csproj" />
     <Project Path="src/CloudDown.Editor.Sample/CloudDown.Editor.Sample.csproj" />

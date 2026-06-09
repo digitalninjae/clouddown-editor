@@ -105,6 +105,10 @@ conventions there**. Key points:
   vertically and the separator row's dashes fill each column.
 - **Doc metadata**: each doc/ADR opens with a metadata table whose header row is left blank
   (the table form keeps each field on its own rendered line).
+- **Solution items**: when creating a new documentation file (under `docs/` or a root-level
+  `.md` meta file), add it to the `Documentation` folder in `CloudDown.Editor.slnx` as a
+  `<File Path="…" />` entry — `.slnx` lists files individually, so each new doc must be
+  registered so it appears in the solution view.
 
 ## Coding Guidelines
 

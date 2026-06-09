@@ -21,7 +21,7 @@ Instead, report them privately using **GitHub's private vulnerability reporting*
 2. Provide a clear description, reproduction steps, affected versions, and any potential impact.
 
 If you cannot use GitHub's private reporting, contact the maintainer at
-**`<INSERT SECURITY CONTACT EMAIL>`**.
+**32693609+digitalninjae@users.noreply.github.com**.
 
 ## What to expect
 

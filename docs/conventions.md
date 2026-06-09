@@ -20,6 +20,12 @@
   fields such as Status, Owner/Deciders, Last updated/Date, Related/Note. The table form keeps
   each field on its own rendered line (consecutive `**bold:**` lines otherwise collapse into a
   single paragraph).
+- **Register new docs in the solution.** When you add a doc under `docs/` (or a root-level `.md`
+  meta file such as a new community-health file), add it as a solution item under the
+  `Documentation` folder in `CloudDown.Editor.slnx` so it shows up in the solution view. The
+  `.slnx` format lists files individually (no folder glob), so each new file needs its own
+  `<File Path="…" />` entry; nest it under the matching virtual subfolder (e.g. `Architecture`,
+  `ADR`).
 
 ## Markdown formatting
 
