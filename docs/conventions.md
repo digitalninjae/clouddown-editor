@@ -70,7 +70,14 @@
 
 ## Git & process
 
-- **Branch per change** (`feature/`, `fix/`, `improvement/`), merged via PR — see CLAUDE.md.
+- **Branch model** (Git Flow style): **`main`** is the release branch — it mirrors the last
+  published NuGet release and changes only via a release promotion; **`dev`** is the integration
+  base and the GitHub default branch. Both are protected (PR required; no force-push or deletion).
+  Full details in [CLAUDE.md](../CLAUDE.md) → _Git Workflow_.
+- **Branch per change** off `dev` (`feature/`, `fix/`, `improvement/`), merged into `dev` via PR.
+- **Release**: PR `dev` → `main`, then tag `main` `vX.Y.Z` (the tag drives the NuGet publish;
+  release immutability keeps it permanent).
+- **CI** (`build.yml`) runs on pushes and PRs to **both** `dev` and `main`.
 - **ADRs** stay `Proposed` until the maintainer reviews and approves — see CLAUDE.md and the
   [ADR log](architecture/adr/README.md).
 - **Testing**: NUnit + Reqnroll + AwesomeAssertions, BDD-led hybrid

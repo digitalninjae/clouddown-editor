@@ -76,13 +76,29 @@ Each platform implements native text editing controls:
 
 ## Git Workflow
 
-**All commits must be made on a dedicated work/feature/improvement branch — never commit
-directly to `main` or `dev`.**
+This repo uses a two-long-lived-branch model (Git Flow style):
 
-- Before starting any change, create a branch off the appropriate base (typically `dev`),
-  e.g. `feature/markdown-editor-control`, `fix/cursor-jump-android`, `improvement/ci-matrix`.
-- Use a `type/short-description` naming convention: `feature/`, `fix/`, or `improvement/`.
-- Open a pull request to merge the branch back; do not push commits straight to `main`/`dev`.
+- **`main` — the release branch.** It mirrors the **last published NuGet release** and only ever
+  changes through a release promotion (below). Each release is a tag (`vX.Y.Z`) on `main`; with
+  GitHub **release immutability** enabled, those tags are permanent. `main` is **not** a base for
+  day-to-day work.
+- **`dev` — the integration base.** All routine work branches off `dev` and merges back into it.
+  `dev` is the GitHub **default branch**, so its README is what the repo homepage shows.
+
+Both branches are **protected**: a pull request is required to merge, and force-pushes and
+deletions are blocked. **Never commit directly to `main` or `dev`.**
+
+**Doing a change:**
+
+- Branch off **`dev`** with a `type/short-description` name — `feature/`, `fix/`, or
+  `improvement/` (e.g. `feature/markdown-editor-control`, `fix/cursor-jump-android`).
+- Open a pull request **into `dev`**; do not push commits straight to `main`/`dev`.
+
+**Releasing (promotion):**
+
+1. Open a PR **`dev` → `main`** when a release is ready.
+2. Merge it, then tag `main` `vX.Y.Z` — the tag drives the NuGet publish.
+3. `main`'s README/state now reflects exactly what was shipped.
 
 ## Architecture Decision Records (ADRs)
 
