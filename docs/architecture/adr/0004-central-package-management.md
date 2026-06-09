@@ -22,21 +22,21 @@ pinned through the SDK-provided `$(MauiVersion)` property.
 ## Options Considered
 
 ### Option A: Per-project versions on each `PackageReference` (default)
-| Dimension | Assessment |
-|-----------|------------|
-| Complexity | Low (template default) |
-| Drift risk | High — versions diverge across projects |
-| Upgrade effort | High — edit every csproj per bump |
+| Dimension      | Assessment                              |
+|----------------|-----------------------------------------|
+| Complexity     | Low (template default)                  |
+| Drift risk     | High — versions diverge across projects |
+| Upgrade effort | High — edit every csproj per bump       |
 
 **Pros:** No extra files; familiar.
 **Cons:** Version drift; tedious, error-prone upgrades; no single source of truth.
 
 ### Option B: Central Package Management (chosen)
-| Dimension | Assessment |
-|-----------|------------|
-| Complexity | Low–Medium — one root file; version-less references |
-| Drift risk | Eliminated — versions centralized |
-| Upgrade effort | Low — change one line |
+| Dimension      | Assessment                                          |
+|----------------|-----------------------------------------------------|
+| Complexity     | Low–Medium — one root file; version-less references |
+| Drift risk     | Eliminated — versions centralized                   |
+| Upgrade effort | Low — change one line                               |
 
 **Pros:** Single source of truth; no drift; clean diffs on upgrades; modern .NET standard.
 **Cons:** Every package needs a `PackageVersion` entry; references must omit versions

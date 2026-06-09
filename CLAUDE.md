@@ -78,6 +78,15 @@ directly to `main` or `dev`.**
 - Use a `type/short-description` naming convention: `feature/`, `fix/`, or `improvement/`.
 - Open a pull request to merge the branch back; do not push commits straight to `main`/`dev`.
 
+## Architecture Decision Records (ADRs)
+
+- ADRs live in `docs/architecture/adr/` in a MADR-style format; see that folder's `README.md`.
+- **Do not mark an ADR `Accepted` until Brian has reviewed the actual document and explicitly
+  stated it is approved.** Until then it stays `Proposed` — even if the underlying decision has
+  been discussed or already implemented. Authoring or editing an ADR is **not** approval; only
+  an explicit approval from the maintainer is.
+- New decisions start at `Proposed`; the maintainer moves them to `Accepted`.
+
 ## Coding Guidelines
 
 ### C# Code Style

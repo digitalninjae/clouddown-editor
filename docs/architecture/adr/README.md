@@ -21,6 +21,7 @@ old record's status to **Superseded by ADR-XXXX**).
 ## Adding a new ADR
 
 1. Copy the format of an existing record; number it sequentially (next: **0005**).
-2. Start at `Proposed`; move to `Accepted` once decided.
+2. Start at `Proposed`. An ADR is moved to `Accepted` **only after the maintainer (Brian) has
+   reviewed the document and explicitly approved it** — authoring/editing an ADR is not approval.
 3. Add a row to the table above.
 4. Cross-link related ADRs and the [vision doc](../../vision.md).
