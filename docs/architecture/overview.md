@@ -21,26 +21,15 @@ yet-built structure, so the doc stays honest about current state.
 
 CloudDown.Editor is a **library**, not an application. It runs *inside* a host .NET MAUI app.
 
-```
-        ┌────────────────────────────────────────────────────────┐
-        │                    Host MAUI app                        │
-        │            (e.g. CloudDown, or any consumer)            │
-        │                                                         │
-        │   owns: files, storage/sync, spell-check data,          │
-        │         navigation, app chrome                          │
-        │                                                         │
-        │   ┌─────────────────────────────────────────────────┐  │
-        │   │              CloudDown.Editor                    │  │
-        │   │   MarkdownEditor + FormattingToolbar controls    │  │
-        │   │   owns: the editing surface & its extension hooks │  │
-        │   └─────────────────────────────────────────────────┘  │
-        └────────────────────────────────────────────────────────┘
-                    ▲                              ▲
-                    │ integrates via               │ types Markdown into
-            ┌───────┴────────┐             ┌───────┴────────┐
-            │  App developer  │             │   End user      │
-            │  (integrator)   │             │  (of host app)  │
-            └─────────────────┘             └─────────────────┘
+```mermaid
+flowchart TB
+    dev["App developer<br/>(integrator)"]
+    user["End user<br/>(of the host app)"]
+    subgraph host["Host MAUI app — e.g. CloudDown"]
+        lib["CloudDown.Editor<br/>MarkdownEditor + FormattingToolbar controls<br/>(owns the editing surface &amp; its extension hooks)"]
+    end
+    dev -->|"integrates via NuGet"| lib
+    user -->|"types Markdown into"| lib
 ```
 
 The library owns the **editing surface and its extension points**; the host owns everything
@@ -51,18 +40,15 @@ above that line (see the "provide the hook, not the feature" principle in the
 
 Four projects; the dependency direction is the important part.
 
-```
-   tests/CloudDown.Editor.Tests        src/CloudDown.Editor.Sample
-        (net10.0, NUnit+Reqnroll)            (MAUI app, platform TFMs)
-                 │                                    │
-                 │ references                         │ references
-                 ▼                                    ▼
-        ┌──────────────────────┐            ┌──────────────────────────┐
-        │ CloudDown.Editor.Core │◄───────────│   CloudDown.Editor        │
-        │  net10.0, NO MAUI     │  references │   MAUI control library    │
-        │  Markdig + Mvvm       │            │   (platform TFMs only)    │
-        └──────────────────────┘            └──────────────────────────┘
-         UI-free logic                        Controls + native handlers
+```mermaid
+flowchart TB
+    tests["tests/CloudDown.Editor.Tests<br/>net10.0 · NUnit + Reqnroll"]
+    sample["src/CloudDown.Editor.Sample<br/>MAUI app · platform TFMs"]
+    maui["CloudDown.Editor<br/>MAUI control library · platform TFMs<br/>Controls + native handlers"]
+    core["CloudDown.Editor.Core<br/>net10.0 · NO MAUI<br/>Markdig + CommunityToolkit.Mvvm<br/>UI-free logic"]
+    tests -->|references| core
+    sample -->|references| maui
+    maui -->|references| core
 ```
 
 | Project | TFM(s) | Depends on | Contains |
@@ -116,15 +102,19 @@ shared Reqnroll behavior specs ([ADR-0002](adr/0002-test-stack.md)).
 ## 5. Key Flows
 
 **Rendering (preview / Split mode):**
-```
-editor text ──► MarkdownService.ToHtml (Markdig pipeline, cached) ──► preview surface
+```mermaid
+flowchart LR
+    text["Editor text"] --> svc["MarkdownService.ToHtml<br/>(Markdig pipeline, cached)"]
+    svc --> preview["Preview surface"]
 ```
 
 **Applying formatting (toolbar or shortcut):**
-```
-user action ──► MarkdownEditor command ──► MarkdownService.ApplyFormatting(content, format,
-                selectionStart, selectionLength) ──► new content ──► handler updates native
-                control + restores selection
+```mermaid
+flowchart LR
+    action["User action<br/>(toolbar / shortcut)"] --> cmd["MarkdownEditor command"]
+    cmd --> apply["MarkdownService.ApplyFormatting<br/>(content, format, selStart, selLen)"]
+    apply --> content["New content"]
+    content --> handler["Handler updates native control<br/>+ restores selection"]
 ```
 
 Keeping `ApplyFormatting` in Core (pure, UI-free) is what lets the behavior be specified and

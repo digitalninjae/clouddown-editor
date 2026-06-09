@@ -87,6 +87,16 @@ directly to `main` or `dev`.**
   an explicit approval from the maintainer is.
 - New decisions start at `Proposed`; the maintainer moves them to `Accepted`.
 
+## Documentation Conventions
+
+- Project docs live in `docs/`.
+- **Diagrams** use **Mermaid** fenced code blocks (```` ```mermaid ````), never ASCII art —
+  ASCII never aligns reliably. Validate diagrams render before committing.
+- **Metadata header** — each doc/ADR opens with a two-column Markdown **table** of metadata
+  (e.g. Status, Owner/Deciders, Last updated/Date, Related/Note). Use the table form (so each
+  field renders on its own line rather than collapsing into one paragraph); leave the table's
+  header row blank.
+
 ## Coding Guidelines
 
 ### C# Code Style

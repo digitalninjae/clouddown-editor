@@ -1,8 +1,10 @@
 # ADR-0003: Separate `CloudDown.Editor.Core` project for testable, UI-free logic
 
-**Status:** Accepted
-**Date:** 2026-06-08
-**Deciders:** Brian Cupples
+|  |  |
+|---|---|
+| **Status** | Accepted |
+| **Date** | 2026-06-08 |
+| **Deciders** | Brian Cupples |
 
 ## Context
 

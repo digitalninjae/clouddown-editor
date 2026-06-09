@@ -1,9 +1,11 @@
 # ADR-0004: Central Package Management for NuGet versions
 
-**Status:** Accepted
-**Date:** 2026-06-08
-**Deciders:** Brian Cupples
-**Note:** Documented retroactively.
+|  |  |
+|---|---|
+| **Status** | Accepted |
+| **Date** | 2026-06-08 |
+| **Deciders** | Brian Cupples |
+| **Note** | Documented retroactively. |
 
 ## Context
 

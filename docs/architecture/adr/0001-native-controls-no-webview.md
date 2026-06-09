@@ -1,9 +1,11 @@
 # ADR-0001: Native platform text controls instead of a WebView
 
-**Status:** Accepted
-**Date:** 2026-06-08
-**Deciders:** Brian Cupples
-**Note:** Documented retroactively; this decision predates the formal ADR log.
+|  |  |
+|---|---|
+| **Status** | Accepted |
+| **Date** | 2026-06-08 |
+| **Deciders** | Brian Cupples |
+| **Note** | Documented retroactively; this decision predates the formal ADR log. |
 
 ## Context
 

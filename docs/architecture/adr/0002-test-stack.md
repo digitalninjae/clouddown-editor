@@ -1,8 +1,10 @@
 # ADR-0002: Test stack — NUnit + Reqnroll + AwesomeAssertions (hybrid)
 
-**Status:** Accepted
-**Date:** 2026-06-08
-**Deciders:** Brian Cupples
+|  |  |
+|---|---|
+| **Status** | Accepted |
+| **Date** | 2026-06-08 |
+| **Deciders** | Brian Cupples |
 
 ## Context
 
