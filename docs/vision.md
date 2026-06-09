@@ -1,11 +1,11 @@
 # CloudDown.Editor — Vision & Scope
 
-| | |
-|---|---|
-| **Status** | Draft |
-| **Owner** | Brian Cupples |
-| **Last updated** | 2026-06-08 |
-| **Related** | [Roadmap](roadmap.md) · [Architecture overview](architecture/overview.md) · [ADRs](architecture/adr/) |
+|                  |                                                                                                       |
+|------------------|-------------------------------------------------------------------------------------------------------|
+| **Status**       | Draft                                                                                                 |
+| **Owner**        | Brian Cupples                                                                                         |
+| **Last updated** | 2026-06-08                                                                                            |
+| **Related**      | [Roadmap](roadmap.md) · [Architecture overview](architecture/overview.md) · [ADRs](architecture/adr/) |
 
 > This is the top-level document for the project. It defines *why* CloudDown.Editor
 > exists, *who* it is for, and *what is in and out of scope*. Everything else — the
@@ -72,8 +72,11 @@ can add in minutes.**
 - **File management** (open/save/browse) — the library handles editor controls only.
 - **A full document/word-processor** — this is a Markdown editor, not a rich-text suite.
   Word-processing *features* (spell-check, grammar, track-changes, and similar) belong to the
-  host app (e.g. CloudDown). The library does not implement them; instead it exposes
+  host app (e.g., CloudDown). The library does not implement them; instead, it exposes
   extensibility hooks (see In scope) so the host can build them on top of the editing surface.
+- **Linux and Tizen** — not officially supported .NET MAUI targets, so they are out of scope.
+  This is a constraint inherited from the framework, not a deliberate exclusion; **revisit if
+  MAUI adds official support** for these platforms (see Constraints).
 
 > **Future candidates (not non-goals):** real-time collaboration is *not* ruled out — it
 > is deferred to the [roadmap](roadmap.md) as a future candidate rather than a v1/v2 commitment.
@@ -109,6 +112,10 @@ can add in minutes.**
 
 ## 8. Constraints
 
+- **Platform reach is bounded by .NET MAUI's officially supported heads** — Android, iOS,
+  Mac Catalyst, and Windows. Platforms MAUI does not officially support (notably **Linux** and
+  **Tizen**) are out of reach until MAUI itself supports them; native handlers depend on a
+  supported MAUI backend per platform.
 - **Minimum platform versions**: Android 8.0, iOS 13.0, Windows 10 (1809), macOS 11
   (via Mac Catalyst).
 - **Dependencies kept minimal** to control NuGet package size (core: MAUI, Markdig,
