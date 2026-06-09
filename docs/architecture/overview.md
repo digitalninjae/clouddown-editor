@@ -13,7 +13,7 @@
 > link; this document is the map, the ADRs are the decisions.
 
 Throughout, **(implemented)** marks what exists today and **(planned)** marks designed-but-not-
-yet-built structure, so the doc stays honest about current state.
+yet-built structure, so the doc stays honest about the current state.
 
 ---
 
