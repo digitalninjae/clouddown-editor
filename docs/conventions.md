@@ -31,10 +31,9 @@
 - Leave the **metadata** table's header row blank (see [Documentation](#documentation)).
 - **Prettier is the canonical Markdown formatter** for this repo (`npm run format`), and CI
   enforces it (`npm run format:check`). Its table style — padded cells and `| --- |` separators —
-  is intentional and **not configurable**. Do **not** fight it with a second formatter: if your
-  IDE has its own Markdown formatter (e.g. Rider/ReSharper, which prefers compact `|---|`
-  separators), configure it to use Prettier or disable its Markdown reformatting. See
-  [CONTRIBUTING.md](../CONTRIBUTING.md) → _Editor setup_.
+  is intentional and **not configurable**. Don't fight it with another tool: if your IDE flags
+  Prettier's tables (e.g. Rider's Markdown table inspection, which prefers compact `|---|`),
+  disable that inspection. See [CONTRIBUTING.md](../CONTRIBUTING.md) → _Editor setup_.
 
 ```markdown
 <!-- Avoid: ragged source -->
