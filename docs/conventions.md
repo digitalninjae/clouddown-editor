@@ -37,9 +37,10 @@
 - Leave the **metadata** table's header row blank (see [Documentation](#documentation)).
 - **Prettier is the canonical Markdown formatter** for this repo (`npm run format`), and CI
   enforces it (`npm run format:check`). Its table style — padded cells and `| --- |` separators —
-  is intentional and **not configurable**. Don't fight it with another tool: if your IDE flags
-  Prettier's tables (e.g. Rider's Markdown table inspection, which prefers compact `|---|`),
-  disable that inspection. See [CONTRIBUTING.md](../CONTRIBUTING.md) → _Editor setup_.
+  is intentional and **not configurable**. Don't fight it with another tool. The committed
+  `.editorconfig` already disables Rider's Markdown table inspection (which prefers compact
+  `|---|`), so it won't flag Prettier's tables; see [CONTRIBUTING.md](../CONTRIBUTING.md) →
+  _Editor setup_.
 
 ```markdown
 <!-- Avoid: ragged source -->
@@ -88,4 +89,6 @@
 - **Central Package Management**: declare versions only in `Directory.Packages.props`; project
   `PackageReference`s carry no inline version
   ([ADR-0004](architecture/adr/0004-central-package-management.md)).
-- **Line endings** are normalized to LF via `.gitattributes`.
+- **Line endings** are normalized to LF — by `.gitattributes` (in git) and `.editorconfig`
+  (`end_of_line = lf`, in editors); `.editorconfig` also sets a final newline and the shared
+  indentation/charset defaults.
