@@ -1,9 +1,9 @@
 # ADR-0003: Separate `CloudDown.Editor.Core` project for testable, UI-free logic
 
-|  |  |
-|---|---|
-| **Status** | Accepted |
-| **Date** | 2026-06-08 |
+|              |               |
+| ------------ | ------------- |
+| **Status**   | Accepted      |
+| **Date**     | 2026-06-08    |
 | **Deciders** | Brian Cupples |
 
 ## Context
@@ -43,8 +43,9 @@ detail (`IsPackable=false`). (Implementation deferred until `dotnet pack` is wir
 ## Options Considered
 
 ### Option A: Platform-only TFMs; test it via platform/device runners
+
 | Dimension  | Assessment                                    |
-|------------|-----------------------------------------------|
+| ---------- | --------------------------------------------- |
 | Complexity | Low (no project change)                       |
 | Test speed | Slow — emulator/device/platform host required |
 | Boundary   | Convention only                               |
@@ -53,8 +54,9 @@ detail (`IsPackable=false`). (Implementation deferred until `dotnet pack` is wir
 **Cons:** Slow feedback; can't unit-test logic on a plain host; heavier CI.
 
 ### Option B: Add a `net10.0` target to the single MAUI library
+
 | Dimension  | Assessment                      |
-|------------|---------------------------------|
+| ---------- | ------------------------------- |
 | Complexity | Low — one TFM added             |
 | Test speed | Fast — plain .NET host          |
 | Boundary   | Convention + `#if` hygiene only |
@@ -66,8 +68,9 @@ library is a shippable asset whose surface must be curated; mixing UI and logic 
 project blurs responsibilities as it grows.
 
 ### Option C: Separate `CloudDown.Editor.Core` (net10.0) + MAUI library — **chosen**
+
 | Dimension  | Assessment                                                 |
-|------------|------------------------------------------------------------|
+| ---------- | ---------------------------------------------------------- |
 | Complexity | Higher — two projects, reference wiring, bundled packaging |
 | Test speed | Fast — tests reference a pure `net10.0` library            |
 | Boundary   | **Strongest — compiler-enforced** (Core cannot see MAUI)   |
@@ -102,5 +105,5 @@ decoration/annotation model, view-models) makes the separation pay for itself.
 2. [x] Reference Core from the MAUI library; drop the MAUI library's non-platform target.
 3. [x] Point the test project at Core; confirm tests run with no MAUI dependency.
 4. [ ] At `dotnet pack` time, bundle the Core DLL into the single `CloudDown.Editor` package
-   (`PrivateAssets="all"` + `TargetsForTfmSpecificBuildOutput`).
+       (`PrivateAssets="all"` + `TargetsForTfmSpecificBuildOutput`).
 5. [ ] Note the "logic lives in Core; UI lives in the MAUI library" rule in the contributing guide.

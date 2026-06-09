@@ -61,3 +61,6 @@ nunit-*.xml
 
 # Reqnroll-generated code-behind for .feature files
 *.feature.cs
+
+# Node tooling (Prettier for Markdown)
+node_modules/

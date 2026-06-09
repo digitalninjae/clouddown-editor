@@ -1,11 +1,11 @@
 # ADR-0004: Central Package Management for NuGet versions
 
-|  |  |
-|---|---|
-| **Status** | Accepted |
-| **Date** | 2026-06-08 |
-| **Deciders** | Brian Cupples |
-| **Note** | Documented retroactively. |
+|              |                           |
+| ------------ | ------------------------- |
+| **Status**   | Accepted                  |
+| **Date**     | 2026-06-08                |
+| **Deciders** | Brian Cupples             |
+| **Note**     | Documented retroactively. |
 
 ## Context
 
@@ -24,8 +24,9 @@ pinned through the SDK-provided `$(MauiVersion)` property.
 ## Options Considered
 
 ### Option A: Per-project versions on each `PackageReference` (default)
+
 | Dimension      | Assessment                              |
-|----------------|-----------------------------------------|
+| -------------- | --------------------------------------- |
 | Complexity     | Low (template default)                  |
 | Drift risk     | High — versions diverge across projects |
 | Upgrade effort | High — edit every csproj per bump       |
@@ -34,8 +35,9 @@ pinned through the SDK-provided `$(MauiVersion)` property.
 **Cons:** Version drift; tedious, error-prone upgrades; no single source of truth.
 
 ### Option B: Central Package Management (chosen)
+
 | Dimension      | Assessment                                          |
-|----------------|-----------------------------------------------------|
+| -------------- | --------------------------------------------------- |
 | Complexity     | Low–Medium — one root file; version-less references |
 | Drift risk     | Eliminated — versions centralized                   |
 | Upgrade effort | Low — change one line                               |
@@ -45,6 +47,7 @@ pinned through the SDK-provided `$(MauiVersion)` property.
 (small ramp-up); occasional friction with properties like `$(MauiVersion)`.
 
 ### Option C: Shared MSBuild properties in `Directory.Build.props`
+
 **Rejected:** approximates CPM with custom `$(…Version)` properties but without NuGet's
 first-class support, validation, or transitive-pinning features. CPM is the purpose-built
 mechanism.

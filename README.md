@@ -15,6 +15,7 @@ CloudDown.Editor is a reusable, drop-in Markdown editor control for .NET MAUI ap
 ### Three Editing Modes
 
 **Writer Mode** ✨
+
 - Rich preview with inline editing
 - Native implementation using platform-specific controls
 - EditText with Spans (Android), UITextView with NSAttributedString (iOS), RichEditBox (Windows)
@@ -23,6 +24,7 @@ CloudDown.Editor is a reusable, drop-in Markdown editor control for .NET MAUI ap
 - Perfect for focused writing
 
 **Editor Mode** 💻
+
 - Plain text with syntax highlighting
 - Full control over Markdown syntax
 - Color-coded formatting markers
@@ -30,6 +32,7 @@ CloudDown.Editor is a reusable, drop-in Markdown editor control for .NET MAUI ap
 - Fast and efficient for technical users
 
 **Split Mode** 📱
+
 - Side-by-side editing and preview
 - Synchronized scrolling
 - Live preview updates
@@ -84,7 +87,7 @@ public static class MauiProgram
         builder
             .UseMauiApp<App>()
             .ConfigureCloudDownEditor(); // Register editor handlers
-            
+
         return builder.Build();
     }
 }
@@ -97,20 +100,20 @@ public static class MauiProgram
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:clouddown="clr-namespace:CloudDown.Editor.Controls;assembly=CloudDown.Editor"
              x:Class="MyApp.EditorPage">
-    
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        
+
         <!-- Optional formatting toolbar -->
-        <clouddown:FormattingToolbar 
+        <clouddown:FormattingToolbar
             Grid.Row="0"
             TargetEditor="{x:Reference Editor}" />
-        
+
         <!-- The markdown editor -->
-        <clouddown:MarkdownEditor 
+        <clouddown:MarkdownEditor
             x:Name="Editor"
             Grid.Row="1"
             Content="{Binding MarkdownContent}"
@@ -173,7 +176,7 @@ public partial class EditorViewModel : ObservableObject
 ```
 
 ```xml
-<clouddown:MarkdownEditor 
+<clouddown:MarkdownEditor
     Content="{Binding MarkdownContent}"
     Mode="{Binding CurrentMode}" />
 ```
@@ -184,46 +187,46 @@ public partial class EditorViewModel : ObservableObject
 
 #### Properties
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `Content` | `string` | `""` | The markdown content (bindable, two-way) |
-| `Mode` | `EditorMode` | `Writer` | Current editing mode |
-| `Theme` | `EditorTheme` | `Auto` | Editor theme (Light/Dark/Auto) |
-| `ReadOnly` | `bool` | `false` | Whether the editor is read-only |
-| `ShowLineNumbers` | `bool` | `false` | Show line numbers (Editor mode only) |
-| `FontFamily` | `string` | System | Font family for editor text |
-| `FontSize` | `double` | 16 | Font size in points |
+| Property          | Type          | Default  | Description                              |
+| ----------------- | ------------- | -------- | ---------------------------------------- |
+| `Content`         | `string`      | `""`     | The markdown content (bindable, two-way) |
+| `Mode`            | `EditorMode`  | `Writer` | Current editing mode                     |
+| `Theme`           | `EditorTheme` | `Auto`   | Editor theme (Light/Dark/Auto)           |
+| `ReadOnly`        | `bool`        | `false`  | Whether the editor is read-only          |
+| `ShowLineNumbers` | `bool`        | `false`  | Show line numbers (Editor mode only)     |
+| `FontFamily`      | `string`      | System   | Font family for editor text              |
+| `FontSize`        | `double`      | 16       | Font size in points                      |
 
 #### Events
 
-| Event | Args | Description |
-|-------|------|-------------|
-| `ContentChanged` | `ContentChangedEventArgs` | Fired when content changes |
-| `ModeChanged` | `ModeChangedEventArgs` | Fired when editing mode changes |
+| Event              | Args                        | Description                       |
+| ------------------ | --------------------------- | --------------------------------- |
+| `ContentChanged`   | `ContentChangedEventArgs`   | Fired when content changes        |
+| `ModeChanged`      | `ModeChangedEventArgs`      | Fired when editing mode changes   |
 | `SelectionChanged` | `SelectionChangedEventArgs` | Fired when text selection changes |
 
 #### Methods
 
-| Method | Parameters | Description |
-|--------|------------|-------------|
-| `ApplyFormatting` | `MarkdownFormat` | Apply markdown formatting to selection |
-| `InsertText` | `string` | Insert text at cursor position |
-| `GetMarkdownAsync` | - | Get current markdown content |
-| `GetHtmlAsync` | - | Get rendered HTML |
-| `SetContent` | `string` | Set markdown content programmatically |
-| `Undo` | - | Undo last change |
-| `Redo` | - | Redo last undone change |
+| Method             | Parameters       | Description                            |
+| ------------------ | ---------------- | -------------------------------------- |
+| `ApplyFormatting`  | `MarkdownFormat` | Apply markdown formatting to selection |
+| `InsertText`       | `string`         | Insert text at cursor position         |
+| `GetMarkdownAsync` | -                | Get current markdown content           |
+| `GetHtmlAsync`     | -                | Get rendered HTML                      |
+| `SetContent`       | `string`         | Set markdown content programmatically  |
+| `Undo`             | -                | Undo last change                       |
+| `Redo`             | -                | Redo last undone change                |
 
 ### FormattingToolbar Control
 
 #### Properties
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `TargetEditor` | `MarkdownEditor` | `null` | The editor to control |
-| `ShowModeSwitch` | `bool` | `true` | Show mode switching buttons |
-| `ShowFormatButtons` | `bool` | `true` | Show formatting buttons |
-| `Orientation` | `StackOrientation` | `Horizontal` | Toolbar orientation |
+| Property            | Type               | Default      | Description                 |
+| ------------------- | ------------------ | ------------ | --------------------------- |
+| `TargetEditor`      | `MarkdownEditor`   | `null`       | The editor to control       |
+| `ShowModeSwitch`    | `bool`             | `true`       | Show mode switching buttons |
+| `ShowFormatButtons` | `bool`             | `true`       | Show formatting buttons     |
+| `Orientation`       | `StackOrientation` | `Horizontal` | Toolbar orientation         |
 
 ### Enums
 
@@ -274,12 +277,12 @@ public enum EditorTheme
 
 ## Platform Support
 
-| Platform | Minimum Version | Status |
-|----------|----------------|--------|
-| Android | 8.0 (API 26) | ✅ Fully Supported |
-| iOS | 13.0 | ✅ Fully Supported |
-| macOS | 11.0 (via Mac Catalyst) | ✅ Fully Supported |
-| Windows | 10.0.19041.0 | ✅ Fully Supported |
+| Platform | Minimum Version         | Status             |
+| -------- | ----------------------- | ------------------ |
+| Android  | 8.0 (API 26)            | ✅ Fully Supported |
+| iOS      | 13.0                    | ✅ Fully Supported |
+| macOS    | 11.0 (via Mac Catalyst) | ✅ Fully Supported |
+| Windows  | 10.0.19041.0            | ✅ Fully Supported |
 
 ## Documentation
 
@@ -366,6 +369,7 @@ CloudDown.Editor is optimized for performance:
 - **Memory Efficient** - Minimal allocations during editing
 
 Benchmarks (on average hardware):
+
 - **Small documents** (<1,000 lines): Real-time highlighting, no lag
 - **Medium documents** (1,000-10,000 lines): <100ms update latency
 - **Large documents** (>10,000 lines): Virtualization recommended
@@ -405,6 +409,7 @@ CloudDown.Editor powers the following applications:
 We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 Areas where we especially need help:
+
 - Testing on different devices and OS versions
 - Performance optimization for large documents
 - Additional markdown syntax support
@@ -414,6 +419,7 @@ Areas where we especially need help:
 ## Roadmap
 
 ### v1.0 (Current)
+
 - ✅ Three editing modes (Writer, Editor, Split)
 - ✅ Native implementations for all platforms
 - ✅ Basic markdown syntax support
@@ -421,18 +427,21 @@ Areas where we especially need help:
 - ✅ MVVM support
 
 ### v1.1 (Planned)
+
 - [ ] Table editing UI
 - [ ] Image paste support
 - [ ] Custom syntax extensions
 - [ ] Export to PDF/HTML
 
 ### v2.0 (Future)
+
 - [ ] Plugin system
 - [ ] Language server protocol support
 - [ ] Advanced theming engine
 - [ ] Split pane customization
 
 ### Under consideration
+
 - [ ] Collaborative editing (future candidate — not yet committed to a release)
 
 ## License
@@ -444,11 +453,13 @@ CloudDown.Editor is licensed under the MIT License. See [LICENSE](LICENSE) for d
 **Author:** Brian Cupples ([@digitalninjae](https://github.com/digitalninjae))
 
 **Inspired by:**
+
 - [Typora](https://typora.io/) - Seamless live preview
 - [Bear](https://bear.app/) - Beautiful writing experience
 - [iA Writer](https://ia.net/writer) - Focus and clarity
 
 **Built with:**
+
 - [.NET MAUI](https://github.com/dotnet/maui) - Cross-platform framework
 - [Markdig](https://github.com/xoofx/markdig) - Markdown processing
 

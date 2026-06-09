@@ -1,9 +1,9 @@
 # ADR-0002: Test stack — NUnit + Reqnroll + AwesomeAssertions (hybrid)
 
-|  |  |
-|---|---|
-| **Status** | Accepted |
-| **Date** | 2026-06-08 |
+|              |               |
+| ------------ | ------------- |
+| **Status**   | Accepted      |
+| **Date**     | 2026-06-08    |
 | **Deciders** | Brian Cupples |
 
 ## Context
@@ -34,8 +34,9 @@ for the **high-volume granular** cases.
 ## Options Considered
 
 ### Option A: xUnit + FluentAssertions (template default)
+
 | Dimension        | Assessment                           |
-|------------------|--------------------------------------|
+| ---------------- | ------------------------------------ |
 | Complexity       | Low — ecosystem default              |
 | Licensing        | FluentAssertions v8+ is commercial   |
 | Data-driven      | Clunkier (`[Theory]`/`[MemberData]`) |
@@ -46,8 +47,9 @@ for the **high-volume granular** cases.
 **Cons:** Commercial assertion library; weaker data-driven ergonomics; no BDD; not the preferred runner.
 
 ### Option B: NUnit + Reqnroll + AwesomeAssertions, hybrid (chosen)
+
 | Dimension        | Assessment                                  |
-|------------------|---------------------------------------------|
+| ---------------- | ------------------------------------------- |
 | Complexity       | Medium — two test styles in one project     |
 | Licensing        | All MIT / open-source                       |
 | Data-driven      | Excellent (`[TestCase]`/`[TestCaseSource]`) |
@@ -58,6 +60,7 @@ for the **high-volume granular** cases.
 **Cons:** Two paradigms to maintain; Reqnroll codegen step; NUnit shares fixture instances (state hygiene needed).
 
 ### Option C: Pure BDD (every test a Reqnroll scenario)
+
 **Rejected:** Gherkin boilerplate is excessive for the hundreds of low-level parsing cases;
 NUnit data-driven tests express those far more concisely.
 

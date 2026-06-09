@@ -1,14 +1,14 @@
 # CloudDown.Editor — Project Conventions
 
 |                  |               |
-|------------------|---------------|
+| ---------------- | ------------- |
 | **Status**       | Living        |
 | **Owner**        | Brian Cupples |
 | **Last updated** | 2026-06-08    |
 
 > The single home for this project's conventions — documentation, formatting, code, git, and
 > process. [CLAUDE.md](../CLAUDE.md) references this file. When we agree on a new convention,
-> record it **here**. For the *why* behind architectural choices, see the
+> record it **here**. For the _why_ behind architectural choices, see the
 > [ADRs](architecture/adr/).
 
 ---
@@ -48,13 +48,13 @@
 
 ### Diagrams
 
-- Use **Mermaid** fenced code blocks (```` ```mermaid ````) for all diagrams.
+- Use **Mermaid** fenced code blocks (` ```mermaid `) for all diagrams.
 - **Never use ASCII art** — it does not align reliably across fonts and renderers.
 - **Validate** that a diagram renders before committing it.
 
 ## Code
 
-- **C# style** and **MVVM**: see the *Coding Guidelines* and *MVVM Pattern* sections in
+- **C# style** and **MVVM**: see the _Coding Guidelines_ and _MVVM Pattern_ sections in
   [CLAUDE.md](../CLAUDE.md).
 - **Architecture boundary**: UI-free logic lives in `CloudDown.Editor.Core`; UI lives in
   `CloudDown.Editor` ([ADR-0003](architecture/adr/0003-separate-core-project.md)).

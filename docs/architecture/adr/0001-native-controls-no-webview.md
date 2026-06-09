@@ -1,17 +1,17 @@
 # ADR-0001: Native platform text controls instead of a WebView
 
-|  |  |
-|---|---|
-| **Status** | Accepted |
-| **Date** | 2026-06-08 |
-| **Deciders** | Brian Cupples |
-| **Note** | Documented retroactively; this decision predates the formal ADR log. |
+|              |                                                                      |
+| ------------ | -------------------------------------------------------------------- |
+| **Status**   | Accepted                                                             |
+| **Date**     | 2026-06-08                                                           |
+| **Deciders** | Brian Cupples                                                        |
+| **Note**     | Documented retroactively; this decision predates the formal ADR log. |
 
 ## Context
 
 CloudDown.Editor must provide Markdown editing with live preview across Android, iOS,
-Windows, and macOS (Mac Catalyst). The core technical choice is *what renders and edits
-the text*. Two broad approaches exist:
+Windows, and macOS (Mac Catalyst). The core technical choice is _what renders and edits
+the text_. Two broad approaches exist:
 
 - A **WebView** hosting a JavaScript Markdown editor (e.g., a CodeMirror/ProseMirror-style
   component), shared across platforms.
@@ -19,7 +19,7 @@ the text*. Two broad approaches exist:
 
 Forces at play: native look-and-feel, input/typing performance, accessibility (screen
 readers, assistive tech), offline operation, IME/keyboard behavior, and the maintenance
-cost of platform-specific code. As a *library* (not an app), the quality of the editing
+cost of platform-specific code. As a _library_ (not an app), the quality of the editing
 experience is the product — integrators adopt it precisely so they don't have to build this.
 
 ## Decision
@@ -34,8 +34,9 @@ Use **native platform text controls**, wired through MAUI handlers, with **no We
 ## Options Considered
 
 ### Option A: WebView + JavaScript editor
+
 | Dimension     | Assessment                                                        |
-|---------------|-------------------------------------------------------------------|
+| ------------- | ----------------------------------------------------------------- |
 | Complexity    | Medium (one editor, but JS ↔ native interop)                      |
 | Performance   | Poor for large docs; input latency, memory overhead               |
 | Native feel   | Poor — non-native selection, IME, scrolling                       |
@@ -46,8 +47,9 @@ Use **native platform text controls**, wired through MAUI handlers, with **no We
 **Cons:** Non-native UX; accessibility gaps; performance/memory cost; brittle interop; large footprint.
 
 ### Option B: Native platform controls (chosen)
+
 | Dimension     | Assessment                                                   |
-|---------------|--------------------------------------------------------------|
+| ------------- | ------------------------------------------------------------ |
 | Complexity    | High — per-platform handler implementations                  |
 | Performance   | Excellent — platform-optimized text rendering                |
 | Native feel   | Excellent — native selection, IME, scrolling, gestures       |
@@ -58,6 +60,7 @@ Use **native platform text controls**, wired through MAUI handlers, with **no We
 **Cons:** Most per-platform code; risk of behavioral divergence across platforms.
 
 ### Option C: Cross-platform MAUI `Editor`/`Entry`
+
 **Rejected:** the built-in controls cannot do rich syntax highlighting / inline preview;
 insufficient for Writer mode.
 

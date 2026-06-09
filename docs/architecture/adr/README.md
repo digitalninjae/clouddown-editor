@@ -11,12 +11,12 @@ old record's status to **Superseded by ADR-XXXX**).
 
 ## Log
 
-| ADR | Title | Status |
-|-----|-------|--------|
-| [0001](0001-native-controls-no-webview.md) | Native platform text controls instead of a WebView | Accepted |
-| [0002](0002-test-stack.md) | Test stack — NUnit + Reqnroll + AwesomeAssertions (hybrid) | Accepted |
-| [0003](0003-separate-core-project.md) | Separate `CloudDown.Editor.Core` project for testable, UI-free logic | Accepted |
-| [0004](0004-central-package-management.md) | Central Package Management for NuGet versions | Accepted |
+| ADR                                        | Title                                                                | Status   |
+| ------------------------------------------ | -------------------------------------------------------------------- | -------- |
+| [0001](0001-native-controls-no-webview.md) | Native platform text controls instead of a WebView                   | Accepted |
+| [0002](0002-test-stack.md)                 | Test stack — NUnit + Reqnroll + AwesomeAssertions (hybrid)           | Accepted |
+| [0003](0003-separate-core-project.md)      | Separate `CloudDown.Editor.Core` project for testable, UI-free logic | Accepted |
+| [0004](0004-central-package-management.md) | Central Package Management for NuGet versions                        | Accepted |
 
 ## Adding a new ADR
 
