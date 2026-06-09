@@ -19,8 +19,9 @@
     <PackageReference Include="AwesomeAssertions" />
   </ItemGroup>
 
+  <!-- Tests target the UI-free Core directly; they need no MAUI dependency. -->
   <ItemGroup>
-    <ProjectReference Include="..\..\src\CloudDown.Editor\CloudDown.Editor.csproj" />
+    <ProjectReference Include="..\..\src\CloudDown.Editor.Core\CloudDown.Editor.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

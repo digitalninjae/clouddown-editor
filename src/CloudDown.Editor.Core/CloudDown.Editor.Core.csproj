@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <!-- UI-free logic core. Deliberately has NO dependency on Microsoft.Maui.Controls
+         so the "no UI types here" boundary is enforced by the compiler, not convention.
+         Microsoft.Maui.Graphics (graphics primitives only — Color etc., not Controls) IS
+         permitted for theme/decoration data; see ADR-0005. Shipped bundled inside the
+         CloudDown.Editor NuGet package (see ADR-0003), not as a standalone package. -->
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Markdig" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.Maui.Graphics" />
+  </ItemGroup>
+
+</Project>

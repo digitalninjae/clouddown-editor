@@ -18,29 +18,32 @@
 ```
 CloudDown.Editor/
 ├── src/
-│   ├── CloudDown.Editor/               # Core library
+│   ├── CloudDown.Editor.Core/          # UI-free logic (net10.0; no MAUI dependency) — see ADR-0003
+│   │   ├── Models/                     # Data models, enums
+│   │   ├── ViewModels/                 # MVVM view models (CommunityToolkit.Mvvm)
+│   │   └── Services/                   # Markdown processing services (Markdig)
+│   ├── CloudDown.Editor/               # MAUI control library (platform TFMs) — references Core
 │   │   ├── Controls/                   # UI controls
 │   │   │   ├── MarkdownEditor.cs      # Main editor control
 │   │   │   └── FormattingToolbar.cs   # Formatting toolbar
-│   │   ├── Platforms/                  # Platform-specific implementations
-│   │   │   ├── Android/               # Native Android TextView/handlers
-│   │   │   ├── iOS/                   # Native UITextView/handlers
-│   │   │   ├── Windows/               # Native RichEditBox/handlers
-│   │   │   └── MacCatalyst/           # Native NSTextView/handlers
-│   │   ├── Models/                     # Data models
-│   │   ├── ViewModels/                 # MVVM view models
-│   │   └── Services/                   # Markdown processing services
+│   │   └── Platforms/                  # Platform-specific implementations
+│   │       ├── Android/               # Native Android TextView/handlers
+│   │       ├── iOS/                   # Native UITextView/handlers
+│   │       ├── Windows/               # Native RichEditBox/handlers
+│   │       └── MacCatalyst/           # Native NSTextView/handlers
 │   └── CloudDown.Editor.Sample/        # Sample MAUI app demonstrating usage
 └── tests/
-    └── CloudDown.Editor.Tests/         # Unit tests
+    └── CloudDown.Editor.Tests/         # Tests (net10.0; reference Core directly)
 ```
 
 ## Key Components
 
 ### MarkdownEditor Control
+
 **Location**: `src/CloudDown.Editor/Controls/MarkdownEditor.cs`
 
 Three editing modes:
+
 - **Writer Mode**: Distraction-free writing (hides syntax)
 - **Editor Mode**: Full syntax visible
 - **Split Mode**: Side-by-side editing and preview
@@ -48,9 +51,11 @@ Three editing modes:
 Platform-specific native implementations for optimal performance.
 
 ### FormattingToolbar Control
+
 **Location**: `src/CloudDown.Editor/Controls/FormattingToolbar.cs`
 
 Provides formatting shortcuts for:
+
 - Headers (H1-H6)
 - Bold, italic, strikethrough
 - Lists (ordered, unordered)
@@ -59,9 +64,11 @@ Provides formatting shortcuts for:
 - Blockquotes
 
 ### Platform Handlers
+
 **Location**: `src/CloudDown.Editor/Platforms/{Platform}/`
 
 Each platform implements native text editing controls:
+
 - Android: Custom TextView with Markdown syntax highlighting
 - iOS: UITextView with attributed string rendering
 - Windows: RichEditBox with syntax highlighting
@@ -77,9 +84,36 @@ directly to `main` or `dev`.**
 - Use a `type/short-description` naming convention: `feature/`, `fix/`, or `improvement/`.
 - Open a pull request to merge the branch back; do not push commits straight to `main`/`dev`.
 
+## Architecture Decision Records (ADRs)
+
+- ADRs live in `docs/architecture/adr/` in a MADR-style format; see that folder's `README.md`.
+- **Do not mark an ADR `Accepted` until Brian has reviewed the actual document and explicitly
+  stated it is approved.** Until then it stays `Proposed` — even if the underlying decision has
+  been discussed or already implemented. Authoring or editing an ADR is **not** approval; only
+  an explicit approval from the maintainer is.
+- New decisions start at `Proposed`; the maintainer moves them to `Accepted`.
+
+## Conventions
+
+Project conventions (documentation, Markdown formatting, code, git, process) live in
+[docs/conventions.md](docs/conventions.md) — that is the single source of truth; **record new
+conventions there**. Key points:
+
+- **Diagrams**: Mermaid fenced blocks (` ```mermaid `) only, never ASCII art; validate
+  they render before committing.
+- **Tables**: align the column dividers in the source — pad cells so the `|` separators line up
+  vertically and the separator row's dashes fill each column.
+- **Doc metadata**: each doc/ADR opens with a metadata table whose header row is left blank
+  (the table form keeps each field on its own rendered line).
+- **Solution items**: when creating a new documentation file (under `docs/` or a root-level
+  `.md` meta file), add it to the `Documentation` folder in `CloudDown.Editor.slnx` as a
+  `<File Path="…" />` entry — `.slnx` lists files individually, so each new doc must be
+  registered so it appears in the solution view.
+
 ## Coding Guidelines
 
 ### C# Code Style
+
 - Use PascalCase for public members, camelCase for private
 - Prefer expression-bodied members where appropriate
 - Use `var` only when type is obvious from right-hand side
@@ -87,12 +121,14 @@ directly to `main` or `dev`.**
 - Null-conditional operators (`?.`, `??`) preferred over explicit null checks
 
 ### MVVM Pattern
+
 - ViewModels inherit from `ObservableObject` (CommunityToolkit.Mvvm)
 - Commands use `ICommand` or `IAsyncRelayCommand`
 - Property changes use `OnPropertyChanged` or `[ObservableProperty]` attribute
 - No business logic in code-behind
 
 ### Platform-Specific Code
+
 ```csharp
 // Use conditional compilation for platform-specific code
 #if ANDROID
@@ -107,6 +143,7 @@ directly to `main` or `dev`.**
 ```
 
 ### Markdown Processing
+
 - Use Markdig pipeline for all Markdown parsing
 - Support CommonMark + GitHub Flavored Markdown extensions
 - Handle syntax highlighting in platform-specific renderers
@@ -115,18 +152,21 @@ directly to `main` or `dev`.**
 ## Development Priorities
 
 ### Performance
+
 - Native controls for text editing (no cross-platform text boxes)
 - Efficient Markdown parsing (cache AST, incremental updates)
 - Lazy rendering for large documents
 - Platform-specific optimizations
 
 ### Reliability
+
 - Robust error handling for file operations
 - Validate Markdown syntax without breaking user input
 - Graceful degradation for unsupported syntax
 - Preserve user content during crashes
 
 ### Testability
+
 - Unit tests for all Markdown processing logic
 - Platform-specific handler tests where possible
 - MVVM pattern enables easy view model testing
@@ -135,11 +175,13 @@ directly to `main` or `dev`.**
 ## Build Configuration
 
 ### Debug
+
 - Enable detailed logging
 - Include debug symbols
 - Fast deployment for iterative testing
 
 ### Release
+
 - Code optimization enabled
 - Trim unused assemblies
 - AOT compilation for supported platforms
@@ -148,25 +190,29 @@ directly to `main` or `dev`.**
 ## Dependencies
 
 **Core**:
+
 - .NET MAUI (latest stable)
 - Markdig (latest stable)
 - CommunityToolkit.Mvvm (latest stable)
 
 **Testing** (hybrid strategy — see below):
+
 - NUnit (test runner; data-driven `[TestCase]`/`[TestCaseSource]` for granular cases)
 - Reqnroll (BDD/Gherkin `.feature` specs for editor behaviors; runs on NUnit via `Reqnroll.NUnit`)
 - AwesomeAssertions (MIT fork of FluentAssertions) for readable assertions
 - NSubstitute for mocking (when needed)
 
 **Testing strategy**: BDD-led hybrid. Reqnroll `.feature` scenarios describe public editor
-*behaviors* (formatting, mode switching, toolbar, undo/redo) and double as living documentation;
+_behaviors_ (formatting, mode switching, toolbar, undo/redo) and double as living documentation;
 NUnit data-driven tests cover the high-volume, low-level cases (e.g. Markdig parsing edge cases).
-Cross-platform logic lives behind UI-free services (e.g. `MarkdownService`) so it is testable on a
-plain `net10.0` host — the library multi-targets `net10.0` alongside the platform TFMs for this reason.
+Cross-platform logic lives in the UI-free `CloudDown.Editor.Core` project (`net10.0`, no MAUI
+dependency), so it is testable on a plain `net10.0` host and the test project references Core
+directly with no MAUI dependency (see [ADR-0003](docs/architecture/adr/0003-separate-core-project.md)).
 
 ## Common Tasks
 
 ### Adding New Markdown Syntax Support
+
 1. Update Markdig pipeline configuration
 2. Implement platform-specific rendering (if needed)
 3. Add formatting toolbar button (if applicable)
@@ -174,6 +220,7 @@ plain `net10.0` host — the library multi-targets `net10.0` alongside the platf
 5. Document in README
 
 ### Creating New Editor Feature
+
 1. Add property/command to ViewModel
 2. Update MarkdownEditor control API
 3. Implement in platform handlers
@@ -182,6 +229,7 @@ plain `net10.0` host — the library multi-targets `net10.0` alongside the platf
 6. Update sample app to demonstrate
 
 ### Platform-Specific Bug Fix
+
 1. Identify affected platform
 2. Locate handler implementation
 3. Fix within `#if` directive or handler class
@@ -198,12 +246,14 @@ plain `net10.0` host — the library multi-targets `net10.0` alongside the platf
 ## Future Roadmap
 
 ### v1.1
+
 - Table editing UI
 - Image paste support
 - Custom syntax extensions
 - Export to PDF/HTML
 
 ### v2.0
+
 - Plugin system
 - Language Server Protocol support
 - Advanced theming engine
@@ -212,6 +262,7 @@ plain `net10.0` host — the library multi-targets `net10.0` alongside the platf
 ## Common Patterns
 
 ### Creating Bindable Properties
+
 ```csharp
 public static readonly BindableProperty TextProperty =
     BindableProperty.Create(
@@ -229,6 +280,7 @@ public string Text
 ```
 
 ### Platform-Specific Handler
+
 ```csharp
 public partial class MarkdownEditorHandler
 {
@@ -243,6 +295,7 @@ public partial class MarkdownEditorHandler
 ```
 
 ### Observable ViewModel
+
 ```csharp
 public partial class EditorViewModel : ObservableObject
 {
@@ -270,6 +323,7 @@ When providing coding assistance:
 7. **Consistent** - match existing code style
 
 ### Code Quality Checklist
+
 - [ ] Follows C# naming conventions
 - [ ] Uses appropriate MVVM pattern
 - [ ] Platform-specific code properly isolated
@@ -322,6 +376,7 @@ view /.sessions/2026-01-03-1430-session-summary.md
 ```
 
 This ensures continuity from the previous session and awareness of:
+
 - What was accomplished
 - Current blockers or issues
 - Next steps planned
@@ -331,6 +386,7 @@ This ensures continuity from the previous session and awareness of:
 ### Creating Session Summaries
 
 **When to create:**
+
 - End of significant coding session (>30 minutes)
 - Before context window fills (proactive compaction)
 - After completing a major feature or milestone
@@ -403,20 +459,24 @@ This ensures continuity from the previous session and awareness of:
 ### Session Summary Best Practices
 
 **Be specific**:
+
 - ❌ "Worked on the editor"
 - ✅ "Implemented MarkdownEditorHandler for Android with syntax highlighting using SpannableString"
 
 **Include context**:
+
 - Why decisions were made
 - What alternatives were considered
 - What didn't work and why
 
 **Track mental state**:
+
 - Current understanding of the codebase
 - Areas of confusion or uncertainty
 - Patterns emerging
 
 **Future-proof**:
+
 - Write for your future self (or another developer)
 - Assume knowledge gaps after time away
 - Document the "why" not just the "what"
@@ -444,15 +504,15 @@ This ensures continuity from the previous session and awareness of:
 - **Incremental parsing**: Only re-highlight changed lines, not entire document
 
 ## Current State
-- **What's working**: 
+- **What's working**:
   - Headers (H1-H6) highlight correctly
   - Bold/italic syntax detection
   - Basic text input and editing
-- **What's broken**: 
+- **What's broken**:
   - Link syntax highlighting incomplete (regex needs refinement)
   - Code block detection fails with nested backticks
   - Cursor position jumps when highlighting updates
-- **What's in progress**: 
+- **What's in progress**:
   - Fixing cursor position preservation
   - Implementing list detection (ordered/unordered)
 
@@ -479,7 +539,7 @@ This ensures continuity from the previous session and awareness of:
 - Best approach for custom Markdown extensions?
 
 ## Code Locations
-- Created: 
+- Created:
   - `/Platforms/Android/Handlers/MarkdownEditorHandler.Android.cs`
   - `/Platforms/Android/Controls/MarkdownTextView.cs`
 - Modified:
@@ -502,18 +562,21 @@ This ensures continuity from the previous session and awareness of:
 ### Using Session Summaries
 
 **At session start:**
+
 ```bash
 # Read the latest session
 view /.sessions/$(ls -t /.sessions/*.md | head -1)
 ```
 
 **Before context compaction:**
+
 ```bash
 # Create summary to preserve current state
 create_file /.sessions/2026-01-03-1645-session-summary.md "..."
 ```
 
 **When resuming after break:**
+
 - Read latest summary first
 - Review "Current State" and "Next Steps"
 - Check "Blockers & Issues" for resolved/new items

@@ -1,0 +1,95 @@
+# Normalize line endings across the repo.
+# Git stores text files with LF internally and checks them out with the
+# platform-native line ending. This prevents the "LF will be replaced by CRLF"
+# warnings on Windows while keeping the repository consistent.
+* text=auto
+
+#
+# Source code
+#
+*.cs            text diff=csharp
+*.csproj        text
+*.props         text
+*.targets       text
+*.sln           text eol=crlf
+*.slnx          text
+*.xaml          text
+*.axaml         text
+*.razor         text
+*.cshtml        text
+*.vb            text
+
+#
+# Config / data
+#
+*.json          text
+*.json5         text
+*.xml           text
+*.config        text
+*.yml           text
+*.yaml          text
+*.toml          text
+*.editorconfig  text
+*.gitattributes text
+*.gitignore     text
+*.resx          text
+*.ruleset       text
+*.nuspec        text
+*.manifest      text
+*.plist         text
+
+#
+# Docs
+#
+*.md            text
+*.markdown      text
+*.txt           text
+
+#
+# Scripts — force a specific line ending so they stay runnable on every host
+#
+*.sh            text eol=lf
+*.bash          text eol=lf
+*.ps1           text eol=crlf
+*.psm1          text eol=crlf
+*.cmd           text eol=crlf
+*.bat           text eol=crlf
+
+#
+# Binary assets — never normalize or diff these
+#
+*.png           binary
+*.jpg           binary
+*.jpeg          binary
+*.gif           binary
+*.ico           binary
+*.icns          binary
+*.webp          binary
+*.bmp           binary
+*.ttf           binary
+*.otf           binary
+*.woff          binary
+*.woff2         binary
+*.eot           binary
+*.pdf           binary
+*.zip           binary
+*.gz            binary
+*.7z            binary
+*.dll           binary
+*.exe           binary
+*.pdb           binary
+*.snk           binary
+*.keystore      binary
+*.jks           binary
+*.p12           binary
+*.pfx           binary
+*.aab           binary
+*.apk           binary
+*.ipa           binary
+*.nupkg         binary
+
+#
+# SVG — treat as text so diffs are readable (it's XML). Switch to "binary"
+# if a particular SVG is large/generated and you don't want it diffed.
+#
+*.svg           text
