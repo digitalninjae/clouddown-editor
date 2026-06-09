@@ -27,3 +27,16 @@ Scenario Outline: Applying inline formatting wraps the selection
         | the cat sat | cat       | Italic        | the *cat* sat     |
         | the cat sat | cat       | Strikethrough | the ~~cat~~ sat   |
         | the cat sat | cat       | InlineCode    | the `cat` sat     |
+
+Scenario Outline: Re-applying inline emphasis toggles it off
+    Given the editor contains "<content>"
+    And the text "<selection>" is selected
+    When I apply <format> formatting
+    Then the content should be "<expected>"
+
+    Examples:
+        | content         | selection | format        | expected    |
+        | the **cat** sat | cat       | Bold          | the cat sat |
+        | the **cat** sat | **cat**   | Bold          | the cat sat |
+        | the *cat* sat   | cat       | Italic        | the cat sat |
+        | the ~~cat~~ sat | cat       | Strikethrough | the cat sat |

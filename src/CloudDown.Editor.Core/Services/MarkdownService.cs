@@ -26,25 +26,59 @@ public sealed class MarkdownService : IMarkdownService
             throw new ArgumentOutOfRangeException(nameof(selectionStart), "Selection falls outside the content bounds.");
 
         var selected = content.Substring(selectionStart, selectionLength);
-        var replacement = format switch
+
+        return format switch
         {
-            MarkdownFormat.Bold => Wrap(selected, "**"),
-            MarkdownFormat.Italic => Wrap(selected, "*"),
-            MarkdownFormat.Strikethrough => Wrap(selected, "~~"),
-            MarkdownFormat.InlineCode => Wrap(selected, "`"),
-            MarkdownFormat.Header1 => LinePrefix(selected, "# "),
-            MarkdownFormat.Header2 => LinePrefix(selected, "## "),
-            MarkdownFormat.Header3 => LinePrefix(selected, "### "),
-            MarkdownFormat.Blockquote => LinePrefix(selected, "> "),
-            MarkdownFormat.BulletList => LinePrefix(selected, "- "),
+            // Emphasis markers toggle: re-applying to already-wrapped text removes them.
+            MarkdownFormat.Bold => ToggleInline(content, selectionStart, selectionLength, "**"),
+            MarkdownFormat.Italic => ToggleInline(content, selectionStart, selectionLength, "*"),
+            MarkdownFormat.Strikethrough => ToggleInline(content, selectionStart, selectionLength, "~~"),
+            MarkdownFormat.InlineCode => Splice(content, selectionStart, selectionLength, Wrap(selected, "`")),
+            MarkdownFormat.Header1 => Splice(content, selectionStart, selectionLength, LinePrefix(selected, "# ")),
+            MarkdownFormat.Header2 => Splice(content, selectionStart, selectionLength, LinePrefix(selected, "## ")),
+            MarkdownFormat.Header3 => Splice(content, selectionStart, selectionLength, LinePrefix(selected, "### ")),
+            MarkdownFormat.Blockquote => Splice(content, selectionStart, selectionLength, LinePrefix(selected, "> ")),
+            MarkdownFormat.BulletList => Splice(content, selectionStart, selectionLength, LinePrefix(selected, "- ")),
             _ => throw new NotSupportedException($"Formatting '{format}' is not yet implemented.")
         };
-
-        return string.Concat(
-            content.AsSpan(0, selectionStart),
-            replacement,
-            content.AsSpan(selectionStart + selectionLength));
     }
+
+    /// <summary>
+    /// Applies an inline emphasis <paramref name="marker"/> (e.g. <c>**</c>) to the selection,
+    /// <em>toggling</em> it: if the selection is already wrapped — whether the markers are part
+    /// of the selection (<c>**cat**</c>) or sit immediately outside it (<c>cat</c> within
+    /// <c>**cat**</c>) — the markers are removed; otherwise the selection is wrapped.
+    /// </summary>
+    private static string ToggleInline(string content, int start, int length, string marker)
+    {
+        var selected = content.Substring(start, length);
+        var m = marker.Length;
+
+        // Markers are part of the selection, e.g. selecting "**cat**".
+        if (length >= 2 * m
+            && selected.StartsWith(marker, StringComparison.Ordinal)
+            && selected.EndsWith(marker, StringComparison.Ordinal))
+        {
+            return Splice(content, start, length, selected.Substring(m, length - 2 * m));
+        }
+
+        // Markers sit just outside the selection, e.g. selecting "cat" within "**cat**".
+        if (start >= m
+            && start + length + m <= content.Length
+            && content.Substring(start - m, m) == marker
+            && content.Substring(start + length, m) == marker)
+        {
+            return string.Concat(
+                content.AsSpan(0, start - m),
+                selected.AsSpan(),
+                content.AsSpan(start + length + m));
+        }
+
+        return Splice(content, start, length, Wrap(selected, marker));
+    }
+
+    private static string Splice(string content, int start, int length, string replacement) =>
+        string.Concat(content.AsSpan(0, start), replacement, content.AsSpan(start + length));
 
     private static string Wrap(string text, string marker) => $"{marker}{text}{marker}";
 
