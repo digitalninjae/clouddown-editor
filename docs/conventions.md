@@ -29,8 +29,12 @@
   separators line up vertically down the whole table, and the separator row's dashes fill each
   column's width. Aligned source is far easier to read and to diff than ragged source.
 - Leave the **metadata** table's header row blank (see [Documentation](#documentation)).
-- This is best enforced by a Markdown formatter (e.g. the IDE's "reformat", Prettier, or
-  `markdownlint`) rather than by hand — but the committed source should always end up aligned.
+- **Prettier is the canonical Markdown formatter** for this repo (`npm run format`), and CI
+  enforces it (`npm run format:check`). Its table style — padded cells and `| --- |` separators —
+  is intentional and **not configurable**. Do **not** fight it with a second formatter: if your
+  IDE has its own Markdown formatter (e.g. Rider/ReSharper, which prefers compact `|---|`
+  separators), configure it to use Prettier or disable its Markdown reformatting. See
+  [CONTRIBUTING.md](../CONTRIBUTING.md) → _Editor setup_.
 
 ```markdown
 <!-- Avoid: ragged source -->
