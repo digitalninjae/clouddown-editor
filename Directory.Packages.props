@@ -7,6 +7,11 @@
   <!-- Library dependencies -->
   <ItemGroup>
     <PackageVersion Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+    <!-- Graphics primitives only (Color etc.), NOT Microsoft.Maui.Controls. Referenced by
+         the UI-free Core for EditorTheme; pinned to a literal because $(MauiVersion) is only
+         defined for MAUI-targeting projects, not plain net10.0. See ADR-0005. Keep aligned
+         with the MAUI version (currently resolves Graphics 10.0.1 transitively). -->
+    <PackageVersion Include="Microsoft.Maui.Graphics" Version="10.0.1" />
     <PackageVersion Include="Markdig" Version="1.2.0" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
   </ItemGroup>

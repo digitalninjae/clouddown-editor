@@ -51,23 +51,26 @@ flowchart TB
     maui -->|references| core
 ```
 
-| Project                     | TFM(s)                                    | Depends on                        | Contains                                                                   |
-| --------------------------- | ----------------------------------------- | --------------------------------- | -------------------------------------------------------------------------- |
-| **CloudDown.Editor.Core**   | `net10.0`                                 | Markdig, CommunityToolkit.Mvvm    | Models, Markdown services, ViewModels — **no MAUI** _(partly implemented)_ |
-| **CloudDown.Editor**        | `net10.0-android/ios/maccatalyst/windows` | Microsoft.Maui.Controls, **Core** | Controls, native handlers, host-builder extension _(partly implemented)_   |
-| **CloudDown.Editor.Sample** | platform TFMs                             | CloudDown.Editor                  | Demonstrates usage _(implemented)_                                         |
-| **CloudDown.Editor.Tests**  | `net10.0`                                 | **Core**                          | NUnit + Reqnroll specs — no MAUI _(implemented)_                           |
+| Project                     | TFM(s)                                    | Depends on                                              | Contains                                                                            |
+| --------------------------- | ----------------------------------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| **CloudDown.Editor.Core**   | `net10.0`                                 | Markdig, CommunityToolkit.Mvvm, Microsoft.Maui.Graphics | Models, Markdown services, ViewModels — **no MAUI Controls** _(partly implemented)_ |
+| **CloudDown.Editor**        | `net10.0-android/ios/maccatalyst/windows` | Microsoft.Maui.Controls, **Core**                       | Controls, native handlers, host-builder extension _(partly implemented)_            |
+| **CloudDown.Editor.Sample** | platform TFMs                             | CloudDown.Editor                                        | Demonstrates usage _(implemented)_                                                  |
+| **CloudDown.Editor.Tests**  | `net10.0`                                 | **Core**                                                | NUnit + Reqnroll specs — no MAUI _(implemented)_                                    |
 
 **The dependency rule** ([ADR-0003](adr/0003-separate-core-project.md)): logic flows **down**
-into Core; UI lives **up** in the MAUI library. Core has no compile-time knowledge of MAUI, so
-the boundary is enforced by the compiler. _Where does a new type go? Data/logic → Core; anything
-that renders or derives from `Microsoft.Maui.Controls` → the MAUI library._
+into Core; UI lives **up** in the MAUI library. Core has no compile-time knowledge of
+`Microsoft.Maui.Controls`, so the boundary is enforced by the compiler. Core _may_ use
+**`Microsoft.Maui.Graphics`** primitives (e.g. `Color`) as data ([ADR-0005](adr/0005-core-may-depend-on-maui-graphics.md)).
+_Where does a new type go? Data/logic → Core; anything that renders or derives from
+`Microsoft.Maui.Controls` → the MAUI library._
 
 ## 3. Key Components
 
 ### Core (`net10.0`)
 
-- **Models** _(implemented)_ — `EditorMode`, `EditorTheme`, `MarkdownFormat`.
+- **Models** _(implemented)_ — `EditorMode`, `EditorThemeMode`, `MarkdownFormat`; the
+  `EditorTheme` / `SyntaxColors` visual-theme model (`Microsoft.Maui.Graphics.Color`).
 - **`IMarkdownService` / `MarkdownService`** _(implemented)_ — Markdig-backed rendering
   (`ToHtml`) and selection formatting (`ApplyFormatting`). The UI-free heart of the library.
 - **ViewModels** _(planned)_ — `ObservableObject`-based state for editor/toolbar.
