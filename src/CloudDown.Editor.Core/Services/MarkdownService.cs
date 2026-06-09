@@ -15,13 +15,11 @@ public sealed class MarkdownService : IMarkdownService
 
     /// <inheritdoc />
     public string ToHtml(string markdown) =>
-        Markdown.ToHtml(markdown ?? string.Empty, _pipeline);
+        Markdown.ToHtml(markdown, _pipeline);
 
     /// <inheritdoc />
     public string ApplyFormatting(string content, MarkdownFormat format, int selectionStart, int selectionLength)
     {
-        content ??= string.Empty;
-
         if (selectionStart < 0 || selectionLength < 0 || selectionStart + selectionLength > content.Length)
             throw new ArgumentOutOfRangeException(nameof(selectionStart), "Selection falls outside the content bounds.");
 
