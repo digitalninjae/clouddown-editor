@@ -361,7 +361,7 @@ When providing coding assistance:
 
 - **No cloud storage** in this library (that's CloudDown app's job)
 - **No file management** - library only handles editor controls
-- **Minimum platform versions**: Android 8.0, iOS 13.0, Windows 10 1809
+- **Minimum platform versions**: Android 8.0 (API 26), iOS 13.0, macOS 12 (via Mac Catalyst), Windows 10 1809 — see [docs/vision.md §8](docs/vision.md#8-constraints)
 - **NuGet package size**: Keep dependencies minimal
 - **Breaking changes**: Avoid in minor versions
 

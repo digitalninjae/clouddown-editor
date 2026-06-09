@@ -118,8 +118,9 @@ can add in minutes.**
   Mac Catalyst, and Windows. Platforms MAUI does not officially support (notably **Linux** and
   **Tizen**) are out of reach until MAUI itself supports them; native handlers depend on a
   supported MAUI backend per platform.
-- **Minimum platform versions**: Android 8.0, iOS 13.0, Windows 10 (1809), macOS 11
-  (via Mac Catalyst).
+- **Minimum platform versions**: Android 8.0 (API 26), iOS 13.0, Windows 10 (1809), macOS 12
+  (via Mac Catalyst). These are at or above the .NET 10 MAUI floor (Android API 21, iOS 12.2,
+  macOS 12, Windows 1809); macOS 11 is not reachable on .NET 10.
 - **Dependencies kept minimal** to control NuGet package size (core: MAUI, Markdig,
   CommunityToolkit.Mvvm).
 - **No breaking changes in minor releases** (semantic versioning).
