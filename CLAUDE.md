@@ -87,15 +87,18 @@ directly to `main` or `dev`.**
   an explicit approval from the maintainer is.
 - New decisions start at `Proposed`; the maintainer moves them to `Accepted`.
 
-## Documentation Conventions
+## Conventions
 
-- Project docs live in `docs/`.
-- **Diagrams** use **Mermaid** fenced code blocks (```` ```mermaid ````), never ASCII art —
-  ASCII never aligns reliably. Validate diagrams render before committing.
-- **Metadata header** — each doc/ADR opens with a two-column Markdown **table** of metadata
-  (e.g. Status, Owner/Deciders, Last updated/Date, Related/Note). Use the table form (so each
-  field renders on its own line rather than collapsing into one paragraph); leave the table's
-  header row blank.
+Project conventions (documentation, Markdown formatting, code, git, process) live in
+[docs/conventions.md](docs/conventions.md) — that is the single source of truth; **record new
+conventions there**. Key points:
+
+- **Diagrams**: Mermaid fenced blocks (```` ```mermaid ````) only, never ASCII art; validate
+  they render before committing.
+- **Tables**: align the column dividers in the source — pad cells so the `|` separators line up
+  vertically and the separator row's dashes fill each column.
+- **Doc metadata**: each doc/ADR opens with a metadata table whose header row is left blank
+  (the table form keeps each field on its own rendered line).
 
 ## Coding Guidelines
 

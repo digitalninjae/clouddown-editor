@@ -1,0 +1,75 @@
+# CloudDown.Editor — Project Conventions
+
+|                  |               |
+|------------------|---------------|
+| **Status**       | Living        |
+| **Owner**        | Brian Cupples |
+| **Last updated** | 2026-06-08    |
+
+> The single home for this project's conventions — documentation, formatting, code, git, and
+> process. [CLAUDE.md](../CLAUDE.md) references this file. When we agree on a new convention,
+> record it **here**. For the *why* behind architectural choices, see the
+> [ADRs](architecture/adr/).
+
+---
+
+## Documentation
+
+- All project docs live in `docs/`.
+- Every doc and ADR opens with a **metadata table** whose **header row is left blank**, holding
+  fields such as Status, Owner/Deciders, Last updated/Date, Related/Note. The table form keeps
+  each field on its own rendered line (consecutive `**bold:**` lines otherwise collapse into a
+  single paragraph).
+
+## Markdown formatting
+
+### Tables
+
+- **Align the column dividers in the source.** Pad every cell with trailing spaces so the `|`
+  separators line up vertically down the whole table, and the separator row's dashes fill each
+  column's width. Aligned source is far easier to read and to diff than ragged source.
+- Leave the **metadata** table's header row blank (see [Documentation](#documentation)).
+- This is best enforced by a Markdown formatter (e.g. the IDE's "reformat", Prettier, or
+  `markdownlint`) rather than by hand — but the committed source should always end up aligned.
+
+```markdown
+<!-- Avoid: ragged source -->
+| Dimension | Assessment |
+|---|---|
+| Complexity | Low |
+| Test speed | Fast — plain .NET host |
+
+<!-- Prefer: aligned source -->
+| Dimension  | Assessment             |
+|------------|------------------------|
+| Complexity | Low                    |
+| Test speed | Fast — plain .NET host |
+```
+
+### Diagrams
+
+- Use **Mermaid** fenced code blocks (```` ```mermaid ````) for all diagrams.
+- **Never use ASCII art** — it does not align reliably across fonts and renderers.
+- **Validate** that a diagram renders before committing it.
+
+## Code
+
+- **C# style** and **MVVM**: see the *Coding Guidelines* and *MVVM Pattern* sections in
+  [CLAUDE.md](../CLAUDE.md).
+- **Architecture boundary**: UI-free logic lives in `CloudDown.Editor.Core`; UI lives in
+  `CloudDown.Editor` ([ADR-0003](architecture/adr/0003-separate-core-project.md)).
+
+## Git & process
+
+- **Branch per change** (`feature/`, `fix/`, `improvement/`), merged via PR — see CLAUDE.md.
+- **ADRs** stay `Proposed` until the maintainer reviews and approves — see CLAUDE.md and the
+  [ADR log](architecture/adr/README.md).
+- **Testing**: NUnit + Reqnroll + AwesomeAssertions, BDD-led hybrid
+  ([ADR-0002](architecture/adr/0002-test-stack.md)).
+
+## Dependencies & repo
+
+- **Central Package Management**: declare versions only in `Directory.Packages.props`; project
+  `PackageReference`s carry no inline version
+  ([ADR-0004](architecture/adr/0004-central-package-management.md)).
+- **Line endings** are normalized to LF via `.gitattributes`.
