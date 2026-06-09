@@ -1,8 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<!-- net10.0 (non-platform) target makes cross-platform logic unit-testable from a plain .NET test host. -->
-		<TargetFrameworks>net10.0;net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
+		<!-- Platform-only TFMs: UI-free logic lives in CloudDown.Editor.Core (net10.0) and is
+		     tested from there, so this library no longer needs a non-platform target (see ADR-0003). -->
+		<TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
 		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
 
 		<UseMaui>true</UseMaui>
@@ -31,12 +32,23 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Maui.Controls" />
-		<PackageReference Include="Markdig" />
-		<PackageReference Include="CommunityToolkit.Mvvm" />
+	</ItemGroup>
+
+	<!-- UI-free logic. Markdig / CommunityToolkit.Mvvm flow transitively from Core. -->
+	<ItemGroup>
+		<ProjectReference Include="..\CloudDown.Editor.Core\CloudDown.Editor.Core.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<None Include="..\..\README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
+
+	<!--
+	  Packaging (deferred to when 'dotnet pack' is wired up): ship ONE package that bundles
+	  the Core DLL rather than emitting a dependency on an unpublished Core package. Plan:
+	    - reference Core with PrivateAssets="all"
+	    - add the Core build output to the package via TargetsForTfmSpecificBuildOutput
+	  Not configured yet because GeneratePackageOnBuild is false; see ADR-0003 action items.
+	-->
 
 </Project>

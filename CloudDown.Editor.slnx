@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/CloudDown.Editor.Core/CloudDown.Editor.Core.csproj" />
     <Project Path="src/CloudDown.Editor.Sample/CloudDown.Editor.Sample.csproj" />
     <Project Path="src/CloudDown.Editor/CloudDown.Editor.csproj" />
   </Folder>

@@ -11,7 +11,7 @@ CloudDown.Editor must provide Markdown editing with live preview across Android,
 Windows, and macOS (Mac Catalyst). The core technical choice is *what renders and edits
 the text*. Two broad approaches exist:
 
-- A **WebView** hosting a JavaScript Markdown editor (e.g. a CodeMirror/ProseMirror-style
+- A **WebView** hosting a JavaScript Markdown editor (e.g., a CodeMirror/ProseMirror-style
   component), shared across platforms.
 - **Native platform text controls** per platform, surfaced through MAUI handlers.
 
@@ -32,25 +32,25 @@ Use **native platform text controls**, wired through MAUI handlers, with **no We
 ## Options Considered
 
 ### Option A: WebView + JavaScript editor
-| Dimension | Assessment |
-|-----------|------------|
-| Complexity | Medium (one editor, but JS↔native interop) |
-| Performance | Poor for large docs; input latency, memory overhead |
-| Native feel | Poor — non-native selection, IME, scrolling |
+| Dimension     | Assessment                                                        |
+|---------------|-------------------------------------------------------------------|
+| Complexity    | Medium (one editor, but JS ↔ native interop)                      |
+| Performance   | Poor for large docs; input latency, memory overhead               |
+| Native feel   | Poor — non-native selection, IME, scrolling                       |
 | Accessibility | Weak — DOM a11y inside a WebView is inconsistent across platforms |
-| Maintenance | Low per-platform code, but heavy JS/runtime surface |
+| Maintenance   | Low per-platform code, but heavy JS/runtime surface               |
 
 **Pros:** Maximum code reuse; rich existing JS editors.
 **Cons:** Non-native UX; accessibility gaps; performance/memory cost; brittle interop; large footprint.
 
 ### Option B: Native platform controls (chosen)
-| Dimension | Assessment |
-|-----------|------------|
-| Complexity | High — per-platform handler implementations |
-| Performance | Excellent — platform-optimized text rendering |
-| Native feel | Excellent — native selection, IME, scrolling, gestures |
-| Accessibility | Strong — inherits platform assistive technology |
-| Maintenance | Higher — four implementations, behavior divergence to manage |
+| Dimension     | Assessment                                                   |
+|---------------|--------------------------------------------------------------|
+| Complexity    | High — per-platform handler implementations                  |
+| Performance   | Excellent — platform-optimized text rendering                |
+| Native feel   | Excellent — native selection, IME, scrolling, gestures       |
+| Accessibility | Strong — inherits platform assistive technology              |
+| Maintenance   | Higher — four implementations, behavior divergence to manage |
 
 **Pros:** Best UX, performance, and accessibility; small footprint; truly native.
 **Cons:** Most per-platform code; risk of behavioral divergence across platforms.
@@ -65,7 +65,7 @@ The decisive forces are **accessibility, native feel, and performance** — all 
 product's value proposition and all areas where WebView is structurally weak. We accept the
 main cost of Option B (four platform handlers and the need to keep their behavior aligned)
 because it buys exactly the qualities integrators cannot easily get otherwise. The
-divergence risk is mitigated by testing strategy (shared behavior specs + per-platform
+divergence risk is mitigated by a testing strategy (shared behavior specs and per-platform
 handler tests — see [ADR-0002](0002-test-stack.md)).
 
 ## Consequences

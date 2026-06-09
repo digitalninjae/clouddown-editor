@@ -58,5 +58,6 @@ nunit-*.xml
 
 # Rider
 .idea/
+
 # Reqnroll-generated code-behind for .feature files
 *.feature.cs

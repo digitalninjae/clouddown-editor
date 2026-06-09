@@ -3,8 +3,6 @@
 **Status:** Accepted
 **Date:** 2026-06-08
 **Deciders:** Brian Cupples
-**Note:** Documented retroactively; supersedes the xUnit + FluentAssertions choice
-originally noted in CLAUDE.md.
 
 ## Context
 
@@ -17,7 +15,7 @@ The library needs an automated test approach covering two distinct kinds of logi
 
 Constraints and forces: the maintainer is fluent in **NUnit** and values its data-driven
 attributes; **FluentAssertions** moved to a commercial license at v8, which is undesirable
-for an MIT library; a **BDD** style is preferred for behavior specs. The CLAUDE.md template
+for an MIT library; a **BDD** style is preferred for behavior specs. The template
 default was xUnit + FluentAssertions.
 
 ## Decision
@@ -34,25 +32,25 @@ for the **high-volume granular** cases.
 ## Options Considered
 
 ### Option A: xUnit + FluentAssertions (template default)
-| Dimension | Assessment |
-|-----------|------------|
-| Complexity | Low — ecosystem default |
-| Licensing | FluentAssertions v8+ is commercial |
-| Data-driven | Clunkier (`[Theory]`/`[MemberData]`) |
-| Team familiarity | Lower (NUnit preferred) |
-| BDD support | None built-in |
+| Dimension        | Assessment                           |
+|------------------|--------------------------------------|
+| Complexity       | Low — ecosystem default              |
+| Licensing        | FluentAssertions v8+ is commercial   |
+| Data-driven      | Clunkier (`[Theory]`/`[MemberData]`) |
+| Team familiarity | Lower (NUnit preferred)              |
+| BDD support      | None built-in                        |
 
 **Pros:** De-facto .NET default; strong isolation (instance per test).
 **Cons:** Commercial assertion library; weaker data-driven ergonomics; no BDD; not the preferred runner.
 
 ### Option B: NUnit + Reqnroll + AwesomeAssertions, hybrid (chosen)
-| Dimension | Assessment |
-|-----------|------------|
-| Complexity | Medium — two test styles in one project |
-| Licensing | All MIT / open-source |
-| Data-driven | Excellent (`[TestCase]`/`[TestCaseSource]`) |
-| Team familiarity | High (NUnit) |
-| BDD support | First-class (Reqnroll → living docs) |
+| Dimension        | Assessment                                  |
+|------------------|---------------------------------------------|
+| Complexity       | Medium — two test styles in one project     |
+| Licensing        | All MIT / open-source                       |
+| Data-driven      | Excellent (`[TestCase]`/`[TestCaseSource]`) |
+| Team familiarity | High (NUnit)                                |
+| BDD support      | First-class (Reqnroll → living docs)        |
 
 **Pros:** Open-source throughout; great data-driven ergonomics; BDD specs as documentation; preferred runner.
 **Cons:** Two paradigms to maintain; Reqnroll codegen step; NUnit shares fixture instances (state hygiene needed).
@@ -82,5 +80,5 @@ AwesomeAssertions neutralizes xUnit's "better assertions" argument while staying
 
 1. [x] Add `Reqnroll.NUnit` and `AwesomeAssertions`; remove xUnit/FluentAssertions.
 2. [x] Establish hybrid example: a `.feature` behavior spec + NUnit data-driven rendering tests.
-3. [x] Update CLAUDE.md test section to this stack.
+3. [x] Update the CLAUDE.md test section to this stack.
 4. [ ] Document the test conventions in a CONTRIBUTING / testing guide.

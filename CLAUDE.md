@@ -18,21 +18,22 @@
 ```
 CloudDown.Editor/
 ├── src/
-│   ├── CloudDown.Editor/               # Core library
+│   ├── CloudDown.Editor.Core/          # UI-free logic (net10.0; no MAUI dependency) — see ADR-0003
+│   │   ├── Models/                     # Data models, enums
+│   │   ├── ViewModels/                 # MVVM view models (CommunityToolkit.Mvvm)
+│   │   └── Services/                   # Markdown processing services (Markdig)
+│   ├── CloudDown.Editor/               # MAUI control library (platform TFMs) — references Core
 │   │   ├── Controls/                   # UI controls
 │   │   │   ├── MarkdownEditor.cs      # Main editor control
 │   │   │   └── FormattingToolbar.cs   # Formatting toolbar
-│   │   ├── Platforms/                  # Platform-specific implementations
-│   │   │   ├── Android/               # Native Android TextView/handlers
-│   │   │   ├── iOS/                   # Native UITextView/handlers
-│   │   │   ├── Windows/               # Native RichEditBox/handlers
-│   │   │   └── MacCatalyst/           # Native NSTextView/handlers
-│   │   ├── Models/                     # Data models
-│   │   ├── ViewModels/                 # MVVM view models
-│   │   └── Services/                   # Markdown processing services
+│   │   └── Platforms/                  # Platform-specific implementations
+│   │       ├── Android/               # Native Android TextView/handlers
+│   │       ├── iOS/                   # Native UITextView/handlers
+│   │       ├── Windows/               # Native RichEditBox/handlers
+│   │       └── MacCatalyst/           # Native NSTextView/handlers
 │   └── CloudDown.Editor.Sample/        # Sample MAUI app demonstrating usage
 └── tests/
-    └── CloudDown.Editor.Tests/         # Unit tests
+    └── CloudDown.Editor.Tests/         # Tests (net10.0; reference Core directly)
 ```
 
 ## Key Components
@@ -161,8 +162,9 @@ directly to `main` or `dev`.**
 **Testing strategy**: BDD-led hybrid. Reqnroll `.feature` scenarios describe public editor
 *behaviors* (formatting, mode switching, toolbar, undo/redo) and double as living documentation;
 NUnit data-driven tests cover the high-volume, low-level cases (e.g. Markdig parsing edge cases).
-Cross-platform logic lives behind UI-free services (e.g. `MarkdownService`) so it is testable on a
-plain `net10.0` host — the library multi-targets `net10.0` alongside the platform TFMs for this reason.
+Cross-platform logic lives in the UI-free `CloudDown.Editor.Core` project (`net10.0`, no MAUI
+dependency), so it is testable on a plain `net10.0` host and the test project references Core
+directly with no MAUI dependency (see [ADR-0003](docs/architecture/adr/0003-separate-core-project.md)).
 
 ## Common Tasks
 
