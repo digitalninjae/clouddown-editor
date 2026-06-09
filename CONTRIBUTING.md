@@ -82,10 +82,12 @@ separators) is intentional and not configurable, so don't let another tool fight
 
 - **Rider / other JetBrains IDEs**: Rider has **two separate** Markdown systems — _inspections_
   and _formatting_ — and the table warning comes from the **inspection**, not the formatter.
-  - **To silence the warning** (the reliable fix): disable the Markdown table inspection at
-    Settings → Editor → Inspections → Markdown → turn off the table-formatting inspection (or
-    set its severity to "Do not show"). Enabling Prettier does **not** silence this inspection —
-    they are independent.
+  - **To silence the warning** (the reliable fix): disable the **"Incorrect table formatting"**
+    inspection (id `MarkdownIncorrectTableFormatting`) at
+    Settings → Editor → Inspections → Markdown, or `Alt+Enter` on the warning → Configure
+    inspection severity → "Do not show". Rider stores this in the gitignored `.idea/` folder, so
+    each contributor sets it locally (it can't be committed). Enabling Prettier does **not**
+    silence this inspection — they are independent.
   - _Optional convenience_: enable the Prettier integration so Rider auto-formats Markdown on
     save (Settings → Languages & Frameworks → JavaScript → Prettier; point it at the repo's
     `node_modules/prettier` and add `md` to "Run for files"). This only affects formatting.
