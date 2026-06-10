@@ -54,4 +54,20 @@ public class ApplyFormattingEmphasisTests
         var innerStart = applied.IndexOf("cat", StringComparison.Ordinal);
         _service.ApplyFormatting(applied, format, innerStart, "cat".Length).Should().Be(original);
     }
+
+    // Degenerate selections — a bare marker, or a span with only a leading marker — must not
+    // throw: the bounds guards in ToggleInline fall back to wrapping rather than over-running
+    // the string (each of these would throw ArgumentOutOfRangeException without the guards).
+    [TestCase("**", "**", MarkdownFormat.Bold, "******")]
+    [TestCase("*", "*", MarkdownFormat.Italic, "***")]
+    [TestCase("**cat", "cat", MarkdownFormat.Bold, "****cat**")]
+    public void ApplyFormatting_Emphasis_DegenerateSelection_FallsBackToWrapping(
+        string content,
+        string selection,
+        MarkdownFormat format,
+        string expected)
+    {
+        var start = content.IndexOf(selection, StringComparison.Ordinal);
+        _service.ApplyFormatting(content, format, start, selection.Length).Should().Be(expected);
+    }
 }

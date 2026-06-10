@@ -21,7 +21,8 @@ public sealed class MarkdownService : IMarkdownService
     public string ApplyFormatting(string content, MarkdownFormat format, int selectionStart, int selectionLength)
     {
         if (selectionStart < 0 || selectionLength < 0 || selectionStart + selectionLength > content.Length)
-            throw new ArgumentOutOfRangeException(nameof(selectionStart), "Selection falls outside the content bounds.");
+            throw new ArgumentOutOfRangeException(nameof(selectionStart),
+                "Selection falls outside the content bounds.");
 
         var selected = content.Substring(selectionStart, selectionLength);
 
@@ -50,29 +51,32 @@ public sealed class MarkdownService : IMarkdownService
     private static string ToggleInline(string content, int start, int length, string marker)
     {
         var selected = content.Substring(start, length);
-        var m = marker.Length;
+        var markerLength = marker.Length;
+        var replacement = selected;
 
-        // Markers are part of the selection, e.g. selecting "**cat**".
-        if (length >= 2 * m
-            && selected.StartsWith(marker, StringComparison.Ordinal)
-            && selected.EndsWith(marker, StringComparison.Ordinal))
+        // Markers are part of the selection, e.g., selecting "**cat**".
+        if (length >= 2 * markerLength &&
+            selected.StartsWith(marker, StringComparison.Ordinal) &&
+            selected.EndsWith(marker, StringComparison.Ordinal))
         {
-            return Splice(content, start, length, selected.Substring(m, length - 2 * m));
+            replacement = selected.Substring(markerLength, length - 2 * markerLength);
+        }
+        // Markers sit just outside the selection, e.g., selecting "cat" within "**cat**":
+        // replace the whole "**cat**" span (selection + both markers) with just the selection.
+        else if (start >= markerLength &&
+                 start + length + markerLength <= content.Length &&
+                 content.Substring(start - markerLength, markerLength) == marker &&
+                 content.Substring(start + length, markerLength) == marker)
+        {
+            start -= markerLength;
+            length += 2 * markerLength;
+        }
+        else
+        {
+            replacement = Wrap(selected, marker);
         }
 
-        // Markers sit just outside the selection, e.g. selecting "cat" within "**cat**".
-        if (start >= m
-            && start + length + m <= content.Length
-            && content.Substring(start - m, m) == marker
-            && content.Substring(start + length, m) == marker)
-        {
-            return string.Concat(
-                content.AsSpan(0, start - m),
-                selected.AsSpan(),
-                content.AsSpan(start + length + m));
-        }
-
-        return Splice(content, start, length, Wrap(selected, marker));
+        return Splice(content, start, length, replacement);
     }
 
     private static string Splice(string content, int start, int length, string replacement) =>
