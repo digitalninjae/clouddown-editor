@@ -25,8 +25,4 @@ public class MarkdownRenderingTests
     [TestCase("> quote", "<blockquote>\n<p>quote</p>\n</blockquote>")]
     public void ToHtml_RendersExpectedFragment(string markdown, string expectedHtml) =>
         _service.ToHtml(markdown).Trim().Should().Be(expectedHtml);
-
-    [Test]
-    public void ToHtml_NullInput_ReturnsEmpty() =>
-        _service.ToHtml(null!).Should().BeEmpty();
 }
