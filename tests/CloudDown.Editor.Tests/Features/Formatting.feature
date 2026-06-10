@@ -40,3 +40,17 @@ Scenario Outline: Re-applying inline emphasis toggles it off
         | the **cat** sat | **cat**   | Bold          | the cat sat |
         | the *cat* sat   | cat       | Italic        | the cat sat |
         | the ~~cat~~ sat | cat       | Strikethrough | the cat sat |
+
+Scenario Outline: Applying a heading toggles the line and switches level
+    Given the editor contains "<content>"
+    And the text "<selection>" is selected
+    When I apply <format> formatting
+    Then the content should be "<expected>"
+
+    Examples:
+        | content       | selection | format  | expected      |
+        | hello         | hello     | Header1 | # hello       |
+        | hello         | hello     | Header2 | ## hello      |
+        | ## hello      | hello     | Header2 | hello         |
+        | ## hello      | hello     | Header3 | ### hello     |
+        | hello world   | world     | Header1 | # hello world |
