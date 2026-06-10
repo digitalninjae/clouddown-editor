@@ -92,7 +92,12 @@ deletions are blocked. **Never commit directly to `main` or `dev`.**
 
 - Branch off **`dev`** with a `type/short-description` name — `feature/`, `fix/`, or
   `improvement/` (e.g. `feature/markdown-editor-control`, `fix/cursor-jump-android`).
-- Open a pull request **into `dev`**; do not push commits straight to `main`/`dev`.
+- Open a pull request **into `dev`**; never push commits straight to `main`/`dev`.
+
+When **Claude** opens a pull request it opens it as a **draft** — so a change that isn't ready
+doesn't create review noise — and leaves it in draft. The maintainer marks it **ready for review**
+(or merges it) once it's actually ready; Claude does not promote its own PRs. (This applies to the
+assistant only — a human contributor's PRs are unaffected.)
 
 **Releasing (promotion):**
 
@@ -103,8 +108,8 @@ deletions are blocked. **Never commit directly to `main` or `dev`.**
 ## Architecture Decision Records (ADRs)
 
 - ADRs live in `docs/architecture/adr/` in a MADR-style format; see that folder's `README.md`.
-- **Do not mark an ADR `Accepted` until Brian has reviewed the actual document and explicitly
-  stated it is approved.** Until then it stays `Proposed` — even if the underlying decision has
+- **Do not mark an ADR `Accepted` until the maintainer has reviewed the actual document and
+  explicitly stated it is approved.** Until then it stays `Proposed` — even if the underlying decision has
   been discussed or already implemented. Authoring or editing an ADR is **not** approval; only
   an explicit approval from the maintainer is.
 - New decisions start at `Proposed`; the maintainer moves them to `Accepted`.
