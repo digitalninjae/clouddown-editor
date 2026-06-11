@@ -31,6 +31,16 @@ public class ApplyFormattingHeadingTests
     // A partial-line selection still toggles the whole line, at its start.
     [TestCase("hello world", "world", MarkdownFormat.Header1, "# hello world")]
     [TestCase("# hello world", "world", MarkdownFormat.Header1, "hello world")]
+    // The full H1–H6 range is supported (per CommonMark).
+    [TestCase("hello", "hello", MarkdownFormat.Header4, "#### hello")]
+    [TestCase("hello", "hello", MarkdownFormat.Header5, "##### hello")]
+    [TestCase("hello", "hello", MarkdownFormat.Header6, "###### hello")]
+    [TestCase("#### hello", "hello", MarkdownFormat.Header4, "hello")]
+    [TestCase("#### hello", "hello", MarkdownFormat.Header2, "## hello")]
+    [TestCase("###### hello", "hello", MarkdownFormat.Header1, "# hello")]
+    // A tab after the hashes also forms a heading (CommonMark), so it's recognized.
+    [TestCase("##\tHello", "Hello", MarkdownFormat.Header2, "Hello")]
+    [TestCase("##\tHello", "Hello", MarkdownFormat.Header3, "### Hello")]
     public void ApplyFormatting_Heading_TogglesAndSwitchesPerLine(
         string content,
         string selection,

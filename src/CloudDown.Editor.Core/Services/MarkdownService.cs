@@ -37,6 +37,9 @@ public sealed class MarkdownService : IMarkdownService
             MarkdownFormat.Header1 => ToggleHeading(content, selectionStart, selectionLength, 1),
             MarkdownFormat.Header2 => ToggleHeading(content, selectionStart, selectionLength, 2),
             MarkdownFormat.Header3 => ToggleHeading(content, selectionStart, selectionLength, 3),
+            MarkdownFormat.Header4 => ToggleHeading(content, selectionStart, selectionLength, 4),
+            MarkdownFormat.Header5 => ToggleHeading(content, selectionStart, selectionLength, 5),
+            MarkdownFormat.Header6 => ToggleHeading(content, selectionStart, selectionLength, 6),
             MarkdownFormat.Blockquote => Splice(content, selectionStart, selectionLength, LinePrefix(selected, "> ")),
             MarkdownFormat.BulletList => Splice(content, selectionStart, selectionLength, LinePrefix(selected, "- ")),
             _ => throw new NotSupportedException($"Formatting '{format}' is not yet implemented.")
@@ -81,7 +84,7 @@ public sealed class MarkdownService : IMarkdownService
     }
 
     /// <summary>
-    /// Applies an ATX heading of <paramref name="level"/> (1–3) to every line the selection
+    /// Applies an ATX heading of <paramref name="level"/> (1–6) to every line the selection
     /// touches, as a uniform toggle: if all touched lines already carry that exact heading it is
     /// removed; otherwise each line is set to it, replacing any existing heading prefix (so the
     /// level switches rather than stacks). Works on a partial-line selection — the heading
@@ -96,8 +99,8 @@ public sealed class MarkdownService : IMarkdownService
         var spanEnd = LineEnd(content, length > 0 ? start + length - 1 : start);
         var lines = content.Substring(spanStart, spanEnd - spanStart).Split('\n');
 
-        var toggled = lines.All(line => line.StartsWith(prefix, StringComparison.Ordinal))
-            ? lines.Select(line => line[prefix.Length..])
+        var toggled = lines.All(line => HeadingLevel(line) == level)
+            ? lines.Select(StripHeading)
             : lines.Select(line => prefix + StripHeading(line));
 
         return Splice(content, spanStart, spanEnd - spanStart, string.Join('\n', toggled));
@@ -121,13 +124,25 @@ public sealed class MarkdownService : IMarkdownService
         return i;
     }
 
-    // Removes a leading ATX heading marker ("#"…"# ") from a line, if present.
-    private static string StripHeading(string line)
+    // ATX heading level (1–6) if the line is a heading — 1–6 '#' followed by a space, tab, or
+    // end of line (per CommonMark) — otherwise 0.
+    private static int HeadingLevel(string line)
     {
         var hashes = 0;
         while (hashes < line.Length && line[hashes] == '#')
             hashes++;
-        return hashes > 0 && hashes < line.Length && line[hashes] == ' ' ? line[(hashes + 1)..] : line;
+        if (hashes is < 1 or > 6)
+            return 0;
+        return hashes == line.Length || line[hashes] is ' ' or '\t' ? hashes : 0;
+    }
+
+    // Removes an ATX heading marker (the '#' run and its trailing space/tab) from a line, if present.
+    private static string StripHeading(string line)
+    {
+        var level = HeadingLevel(line);
+        if (level == 0)
+            return line;
+        return level < line.Length && line[level] is ' ' or '\t' ? line[(level + 1)..] : line[level..];
     }
 
     private static string Splice(string content, int start, int length, string replacement) =>

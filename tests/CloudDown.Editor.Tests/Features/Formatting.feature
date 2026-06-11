@@ -51,6 +51,8 @@ Scenario Outline: Applying a heading toggles the line and switches level
         | content       | selection | format  | expected      |
         | hello         | hello     | Header1 | # hello       |
         | hello         | hello     | Header2 | ## hello      |
+        | hello         | hello     | Header6 | ###### hello  |
         | ## hello      | hello     | Header2 | hello         |
         | ## hello      | hello     | Header3 | ### hello     |
+        | #### hello    | hello     | Header2 | ## hello      |
         | hello world   | world     | Header1 | # hello world |
