@@ -8,6 +8,12 @@ namespace CloudDown.Editor.Services;
 /// </summary>
 public interface IMarkdownService
 {
+    /// <summary>
+    /// Global, host-configurable formatting preferences (e.g. which placeholder a link insertion
+    /// selects). A consuming editor may set or replace this at runtime.
+    /// </summary>
+    MarkdownFormattingOptions FormattingOptions { get; set; }
+
     /// <summary>Renders Markdown <paramref name="markdown"/> to an HTML fragment.</summary>
     string ToHtml(string markdown);
 
