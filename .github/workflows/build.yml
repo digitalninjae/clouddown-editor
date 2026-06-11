@@ -1,7 +1,8 @@
-# Builds the CloudDown.Editor library and runs the net10.0 test suite.
-# A Windows runner can compile all platform target frameworks (Android, iOS,
-# Mac Catalyst, Windows). Producing signed iOS/Mac *app* packages would require
-# a macOS runner — that's a future enhancement, not needed to build the library.
+# Builds the CloudDown.Editor library, runs the net10.0 test suite, and performs
+# SonarCloud static analysis — in a single instrumented build so the solution is
+# compiled once. A Windows runner can compile all platform target frameworks
+# (Android, iOS, Mac Catalyst, Windows). Producing signed iOS/Mac *app* packages
+# would require a macOS runner — a future enhancement, not needed to build the library.
 name: Build
 
 on:
@@ -30,33 +31,11 @@ jobs:
       run: npm run format:check
 
   build:
-    runs-on: windows-latest
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v5.0.1
-      with:
-        dotnet-version: 10.0.x
-
-    - name: Restore .NET MAUI workloads
-      run: dotnet workload restore
-
-    - name: Restore dependencies
-      run: dotnet restore
-
-    - name: Build library (all target frameworks)
-      run: dotnet build src/CloudDown.Editor/CloudDown.Editor.csproj --no-restore --configuration Release
-
-    - name: Test (net10.0)
-      run: dotnet test tests/CloudDown.Editor.Tests/CloudDown.Editor.Tests.csproj --configuration Release --verbosity normal
-
-  sonarcloud:
-    # SonarCloud static analysis. Wraps a full solution build with the scanner.
-    # Needs the .NET SDK + MAUI workloads (the snippet only sets up Java), since
-    # `dotnet build` compiles the platform-TFM control project too.
-    name: SonarCloud analysis
+    # Single instrumented build: the SonarScanner hooks Roslyn analyzers into the
+    # MSBuild compile, so the build must run inside `begin`/`end`. Running the tests
+    # (with coverage) in the same job means the solution is built only once, and the
+    # coverage report feeds SonarCloud. Needs the .NET SDK + MAUI workloads (the
+    # build compiles the platform-TFM control project) and the JDK for the scanner.
     runs-on: windows-latest
 
     steps:
@@ -100,11 +79,16 @@ jobs:
         New-Item -Path ${{ runner.temp }}\scanner -ItemType Directory
         dotnet tool update dotnet-sonarscanner --tool-path ${{ runner.temp }}\scanner
 
-    - name: Build and analyze
+    - name: Install coverage tool
+      shell: powershell
+      run: dotnet tool update dotnet-coverage --tool-path ${{ runner.temp }}\coverage
+
+    - name: Build, test and analyze
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       shell: powershell
       run: |
-        ${{ runner.temp }}\scanner\dotnet-sonarscanner begin /k:"digitalninjae_clouddown-editor" /o:"digitalninjae" /d:sonar.token="$env:SONAR_TOKEN"
-        dotnet build
+        ${{ runner.temp }}\scanner\dotnet-sonarscanner begin /k:"digitalninjae_clouddown-editor" /o:"digitalninjae" /d:sonar.token="$env:SONAR_TOKEN" /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml
+        dotnet build --configuration Release
+        ${{ runner.temp }}\coverage\dotnet-coverage collect "dotnet test tests/CloudDown.Editor.Tests/CloudDown.Editor.Tests.csproj --no-build --configuration Release --verbosity normal" -f xml -o coverage.xml
         ${{ runner.temp }}\scanner\dotnet-sonarscanner end /d:sonar.token="$env:SONAR_TOKEN"
