@@ -36,7 +36,7 @@ public sealed partial class MarkdownService : IMarkdownService
             MarkdownFormat.Bold => ToggleInline(content, selectionStart, selectionLength, "**"),
             MarkdownFormat.Italic => ToggleInline(content, selectionStart, selectionLength, "*"),
             MarkdownFormat.Strikethrough => ToggleInline(content, selectionStart, selectionLength, "~~"),
-            MarkdownFormat.InlineCode => SpliceSelecting(content, selectionStart, selectionLength, Wrap(selected, "`")),
+            MarkdownFormat.InlineCode => ReplaceAndSelect(content, selectionStart, selectionLength, Wrap(selected, "`")),
             // Headings toggle per line and switch level rather than stack.
             MarkdownFormat.Header1 => ToggleHeading(content, selectionStart, selectionLength, 1),
             MarkdownFormat.Header2 => ToggleHeading(content, selectionStart, selectionLength, 2),
@@ -44,7 +44,7 @@ public sealed partial class MarkdownService : IMarkdownService
             MarkdownFormat.Header4 => ToggleHeading(content, selectionStart, selectionLength, 4),
             MarkdownFormat.Header5 => ToggleHeading(content, selectionStart, selectionLength, 5),
             MarkdownFormat.Header6 => ToggleHeading(content, selectionStart, selectionLength, 6),
-            MarkdownFormat.Blockquote => SpliceSelecting(content, selectionStart, selectionLength, LinePrefix(selected, "> ")),
+            MarkdownFormat.Blockquote => ReplaceAndSelect(content, selectionStart, selectionLength, LinePrefix(selected, "> ")),
             // Lists toggle per line and switch type rather than stack, mirroring headings.
             MarkdownFormat.BulletList => ToggleBulletList(content, selectionStart, selectionLength),
             MarkdownFormat.NumberedList => ToggleNumberedList(content, selectionStart, selectionLength, numberedListStart),
@@ -90,7 +90,7 @@ public sealed partial class MarkdownService : IMarkdownService
             replacement = Wrap(selected, marker);
         }
 
-        return SpliceSelecting(content, start, length, replacement);
+        return ReplaceAndSelect(content, start, length, replacement);
     }
 
     /// <summary>
@@ -109,7 +109,7 @@ public sealed partial class MarkdownService : IMarkdownService
             ? lines.Select(StripHeading)
             : lines.Select(line => prefix + StripHeading(line));
 
-        return SpliceSelecting(content, spanStart, spanLength, string.Join('\n', toggled));
+        return ReplaceAndSelect(content, spanStart, spanLength, string.Join('\n', toggled));
     }
 
     // Start of the line containing index (just after the previous newline, or 0).
@@ -174,7 +174,7 @@ public sealed partial class MarkdownService : IMarkdownService
         var toggled = lines.All(IsBullet)
             ? lines.Select(StripList)
             : lines.Select(line => "- " + StripList(line));
-        return SpliceSelecting(content, spanStart, spanLength, string.Join('\n', toggled));
+        return ReplaceAndSelect(content, spanStart, spanLength, string.Join('\n', toggled));
     }
 
     private static FormattingResult ToggleTaskList(string content, int start, int length)
@@ -183,7 +183,7 @@ public sealed partial class MarkdownService : IMarkdownService
         var toggled = lines.All(IsTask)
             ? lines.Select(StripList)
             : lines.Select(line => "- [ ] " + StripList(line));
-        return SpliceSelecting(content, spanStart, spanLength, string.Join('\n', toggled));
+        return ReplaceAndSelect(content, spanStart, spanLength, string.Join('\n', toggled));
     }
 
     // Numbered lists count sequentially from numberStart so a list can continue a preceding one.
@@ -193,7 +193,7 @@ public sealed partial class MarkdownService : IMarkdownService
         var toggled = lines.All(line => IsNumbered(line, out _))
             ? lines.Select(StripList)
             : lines.Select((line, i) => $"{numberStart + i}. " + StripList(line));
-        return SpliceSelecting(content, spanStart, spanLength, string.Join('\n', toggled));
+        return ReplaceAndSelect(content, spanStart, spanLength, string.Join('\n', toggled));
     }
 
     // A task item: a bullet char, "[ ]"/"[x]"/"[X]", then a space, e.g. "- [ ] ".
@@ -254,7 +254,7 @@ public sealed partial class MarkdownService : IMarkdownService
 
     // Splices replacement into [start, start+length) and selects the whole inserted replacement,
     // so the affected text stays highlighted after the operation.
-    private static FormattingResult SpliceSelecting(string content, int start, int length, string replacement) =>
+    private static FormattingResult ReplaceAndSelect(string content, int start, int length, string replacement) =>
         new(Splice(content, start, length, replacement), start, replacement.Length);
 
     private static string Wrap(string text, string marker) => $"{marker}{text}{marker}";
