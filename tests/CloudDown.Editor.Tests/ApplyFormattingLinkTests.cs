@@ -55,7 +55,7 @@ public class ApplyFormattingLinkTests
 
     [TestCase("see Anthropic here", "Anthropic", MarkdownFormat.Link)]
     [TestCase("see logo here", "logo", MarkdownFormat.Image)]
-    public void ApplyFormatting_LinkOrImage_SelectsUrlPlaceholder(
+    public void ApplyFormatting_LinkOrImage_SelectsUrlPlaceholderByDefault(
         string content,
         string selection,
         MarkdownFormat format)
@@ -64,7 +64,34 @@ public class ApplyFormattingLinkTests
 
         var result = _service.ApplyFormatting(content, format, start, selection.Length);
 
-        // The returned selection lands on the url placeholder, ready to overtype.
+        // The default LinkSelectionTarget.Url lands the selection on the url placeholder.
         result.Content.Substring(result.SelectionStart, result.SelectionLength).Should().Be("url");
+    }
+
+    [TestCase("see Anthropic here", "Anthropic", MarkdownFormat.Link, "Anthropic")]
+    [TestCase("see logo here", "logo", MarkdownFormat.Image, "logo")]
+    public void ApplyFormatting_LinkOrImage_TextPreference_SelectsTheLabel(
+        string content,
+        string selection,
+        MarkdownFormat format,
+        string expectedSelectedText)
+    {
+        _service.FormattingOptions.LinkSelectionTarget = LinkSelectionTarget.Text;
+        var start = content.IndexOf(selection, StringComparison.Ordinal);
+
+        var result = _service.ApplyFormatting(content, format, start, selection.Length);
+
+        result.Content.Substring(result.SelectionStart, result.SelectionLength).Should().Be(expectedSelectedText);
+    }
+
+    [Test]
+    public void ApplyFormatting_Link_TextPreference_EmptySelection_SelectsPlaceholderLabel()
+    {
+        _service.FormattingOptions.LinkSelectionTarget = LinkSelectionTarget.Text;
+
+        var result = _service.ApplyFormatting("see  here", MarkdownFormat.Link, 4, 0);
+
+        result.Content.Should().Be("see [text](url) here");
+        result.Content.Substring(result.SelectionStart, result.SelectionLength).Should().Be("text");
     }
 }

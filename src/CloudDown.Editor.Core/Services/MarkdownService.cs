@@ -15,6 +15,9 @@ public sealed partial class MarkdownService : IMarkdownService
         .Build();
 
     /// <inheritdoc />
+    public MarkdownFormattingOptions FormattingOptions { get; set; } = new();
+
+    /// <inheritdoc />
     public string ToHtml(string markdown) =>
         Markdown.ToHtml(markdown, _pipeline);
 
@@ -49,9 +52,10 @@ public sealed partial class MarkdownService : IMarkdownService
             MarkdownFormat.BulletList => ToggleBulletList(content, selectionStart, selectionLength),
             MarkdownFormat.NumberedList => ToggleNumberedList(content, selectionStart, selectionLength, numberedListStart),
             MarkdownFormat.TaskList => ToggleTaskList(content, selectionStart, selectionLength),
-            // Links/images insert [text](url) / ![alt](url), selecting the url placeholder.
-            MarkdownFormat.Link => InsertLink(content, selectionStart, selectionLength, isImage: false),
-            MarkdownFormat.Image => InsertLink(content, selectionStart, selectionLength, isImage: true),
+            // Links/images insert [text](url) / ![alt](url); the configured target picks which
+            // placeholder is selected (url by default).
+            MarkdownFormat.Link => InsertLink(content, selectionStart, selectionLength, isImage: false, FormattingOptions.LinkSelectionTarget),
+            MarkdownFormat.Image => InsertLink(content, selectionStart, selectionLength, isImage: true, FormattingOptions.LinkSelectionTarget),
             _ => throw new NotSupportedException($"Formatting '{format}' is not yet implemented.")
         };
     }
@@ -234,19 +238,24 @@ public sealed partial class MarkdownService : IMarkdownService
     /// <summary>
     /// Inserts a link <c>[text](url)</c> or image <c>![alt](url)</c> at the selection, using the
     /// selected text as the link text / image alt (or a <c>text</c>/<c>alt</c> placeholder when the
-    /// selection is empty), and selecting the <c>url</c> placeholder so the caret lands where the
-    /// user types the address.
+    /// selection is empty). The returned selection lands on the placeholder named by
+    /// <paramref name="selectionTarget"/> — the <c>url</c> (default) or the text/alt — so the caret
+    /// is ready where the user types next.
     /// </summary>
-    private static FormattingResult InsertLink(string content, int start, int length, bool isImage)
+    private static FormattingResult InsertLink(string content, int start, int length, bool isImage, LinkSelectionTarget selectionTarget)
     {
         const string url = "url";
         var prefix = isImage ? "![" : "[";
         var text = length > 0 ? content.Substring(start, length) : (isImage ? "alt" : "text");
 
-        var replacement = $"{prefix}{text}]({url})";
-        // The url placeholder sits just past the opening prefix, the text, and the "](" delimiter.
-        var urlStart = start + prefix.Length + text.Length + 2;
-        return new FormattingResult(Splice(content, start, length, replacement), urlStart, url.Length);
+        var spliced = Splice(content, start, length, $"{prefix}{text}]({url})");
+
+        // The text starts just past the opening prefix; the url just past the text and "](".
+        var textStart = start + prefix.Length;
+        var urlStart = textStart + text.Length + 2;
+        return selectionTarget == LinkSelectionTarget.Text
+            ? new FormattingResult(spliced, textStart, text.Length)
+            : new FormattingResult(spliced, urlStart, url.Length);
     }
 
     private static string Splice(string content, int start, int length, string replacement) =>
