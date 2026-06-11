@@ -48,7 +48,7 @@ public class ApplyFormattingHeadingTests
         string expected)
     {
         var start = content.IndexOf(selection, StringComparison.Ordinal);
-        _service.ApplyFormatting(content, format, start, selection.Length).Should().Be(expected);
+        _service.ApplyFormatting(content, format, start, selection.Length).Content.Should().Be(expected);
     }
 
     [Test]
@@ -56,7 +56,7 @@ public class ApplyFormattingHeadingTests
     {
         const string content = "alpha\nbeta";
         _service.ApplyFormatting(content, MarkdownFormat.Header2, 0, content.Length)
-            .Should().Be("## alpha\n## beta");
+            .Content.Should().Be("## alpha\n## beta");
     }
 
     [Test]
@@ -64,7 +64,7 @@ public class ApplyFormattingHeadingTests
     {
         const string content = "## alpha\n## beta";
         _service.ApplyFormatting(content, MarkdownFormat.Header2, 0, content.Length)
-            .Should().Be("alpha\nbeta");
+            .Content.Should().Be("alpha\nbeta");
     }
 
     [Test]
@@ -73,6 +73,6 @@ public class ApplyFormattingHeadingTests
         // Not all lines already carry H2, so every line is set to it (switching the existing one).
         const string content = "# alpha\nbeta";
         _service.ApplyFormatting(content, MarkdownFormat.Header2, 0, content.Length)
-            .Should().Be("## alpha\n## beta");
+            .Content.Should().Be("## alpha\n## beta");
     }
 }

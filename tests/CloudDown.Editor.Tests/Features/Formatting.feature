@@ -73,3 +73,21 @@ Scenario Outline: Applying a list toggles the line and switches type
         | - milk     | milk      | NumberedList | 1. milk    |
         | 1. milk    | milk      | TaskList     | - [ ] milk |
         | - [ ] milk | milk      | BulletList   | - milk     |
+
+Scenario Outline: Applying a link or image wraps the selection and inserts a url placeholder
+    Given the editor contains "<content>"
+    And the text "<selection>" is selected
+    When I apply <format> formatting
+    Then the content should be "<expected>"
+
+    Examples:
+        | content            | selection | format | expected                  |
+        | see Anthropic here | Anthropic | Link   | see [Anthropic](url) here |
+        | see logo here      | logo      | Image  | see ![logo](url) here     |
+
+Scenario: Applying a link selects the url placeholder for the user to type
+    Given the editor contains "see Anthropic here"
+    And the text "Anthropic" is selected
+    When I apply Link formatting
+    Then the content should be "see [Anthropic](url) here"
+    And the selected text should be "url"

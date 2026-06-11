@@ -36,7 +36,7 @@ public class ApplyFormattingEmphasisTests
         string expected)
     {
         var start = content.IndexOf(selection, StringComparison.Ordinal);
-        _service.ApplyFormatting(content, format, start, selection.Length).Should().Be(expected);
+        _service.ApplyFormatting(content, format, start, selection.Length).Content.Should().Be(expected);
     }
 
     [TestCase(MarkdownFormat.Bold, "the **cat** sat")]
@@ -47,12 +47,12 @@ public class ApplyFormattingEmphasisTests
         const string original = "the cat sat";
         var start = original.IndexOf("cat", StringComparison.Ordinal);
 
-        var applied = _service.ApplyFormatting(original, format, start, "cat".Length);
+        var applied = _service.ApplyFormatting(original, format, start, "cat".Length).Content;
         applied.Should().Be(wrapped);
 
         // Re-select the inner word in the wrapped content and toggle the emphasis back off.
         var innerStart = applied.IndexOf("cat", StringComparison.Ordinal);
-        _service.ApplyFormatting(applied, format, innerStart, "cat".Length).Should().Be(original);
+        _service.ApplyFormatting(applied, format, innerStart, "cat".Length).Content.Should().Be(original);
     }
 
     // Degenerate selections — a bare marker, or a span with only a leading marker — must not
@@ -68,6 +68,6 @@ public class ApplyFormattingEmphasisTests
         string expected)
     {
         var start = content.IndexOf(selection, StringComparison.Ordinal);
-        _service.ApplyFormatting(content, format, start, selection.Length).Should().Be(expected);
+        _service.ApplyFormatting(content, format, start, selection.Length).Content.Should().Be(expected);
     }
 }
