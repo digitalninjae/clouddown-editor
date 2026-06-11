@@ -56,3 +56,20 @@ Scenario Outline: Applying a heading toggles the line and switches level
         | ## hello      | hello     | Header3 | ### hello     |
         | #### hello    | hello     | Header2 | ## hello      |
         | hello world   | world     | Header1 | # hello world |
+
+Scenario Outline: Applying a list toggles the line and switches type
+    Given the editor contains "<content>"
+    And the text "<selection>" is selected
+    When I apply <format> formatting
+    Then the content should be "<expected>"
+
+    Examples:
+        | content    | selection | format       | expected   |
+        | milk       | milk      | BulletList   | - milk     |
+        | milk       | milk      | NumberedList | 1. milk    |
+        | milk       | milk      | TaskList     | - [ ] milk |
+        | - milk     | milk      | BulletList   | milk       |
+        | - [ ] milk | milk      | TaskList     | milk       |
+        | - milk     | milk      | NumberedList | 1. milk    |
+        | 1. milk    | milk      | TaskList     | - [ ] milk |
+        | - [ ] milk | milk      | BulletList   | - milk     |
