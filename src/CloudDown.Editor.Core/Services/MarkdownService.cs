@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using CloudDown.Editor.Models;
 using Markdig;
 
@@ -7,7 +8,7 @@ namespace CloudDown.Editor.Services;
 /// Default <see cref="IMarkdownService"/> backed by Markdig, configured for
 /// CommonMark + common GitHub Flavored Markdown extensions.
 /// </summary>
-public sealed class MarkdownService : IMarkdownService
+public sealed partial class MarkdownService : IMarkdownService
 {
     private readonly MarkdownPipeline _pipeline = new MarkdownPipelineBuilder()
         .UseAdvancedExtensions()
@@ -193,10 +194,10 @@ public sealed class MarkdownService : IMarkdownService
     }
 
     // A task item: a bullet char, "[ ]"/"[x]"/"[X]", then a space, e.g. "- [ ] ".
-    private static bool IsTask(string line) =>
-        line.Length >= 6 &&
-        line[0] is '-' or '*' or '+' && line[1] == ' ' &&
-        line[2] == '[' && line[3] is ' ' or 'x' or 'X' && line[4] == ']' && line[5] == ' ';
+    [GeneratedRegex(@"^[*+-] \[[xX ]\] ")]
+    private static partial Regex TaskMarker();
+
+    private static bool IsTask(string line) => TaskMarker().IsMatch(line);
 
     // A bullet item: a bullet char followed by a space — but NOT a task, whose marker begins the
     // same way, so the check must exclude it (this encodes the task-before-bullet precedence).
@@ -204,16 +205,14 @@ public sealed class MarkdownService : IMarkdownService
         line.Length >= 2 && line[0] is '-' or '*' or '+' && line[1] == ' ' && !IsTask(line);
 
     // A numbered item: one or more digits, a '.' or ')' delimiter, then a space (per CommonMark).
+    [GeneratedRegex(@"^\d+[.)] ")]
+    private static partial Regex NumberedMarker();
+
     private static bool IsNumbered(string line, out int markerLength)
     {
-        markerLength = 0;
-        var digits = 0;
-        while (digits < line.Length && char.IsAsciiDigit(line[digits]))
-            digits++;
-        if (digits == 0 || digits + 1 >= line.Length || line[digits] is not ('.' or ')') || line[digits + 1] != ' ')
-            return false;
-        markerLength = digits + 2;
-        return true;
+        var match = NumberedMarker().Match(line);
+        markerLength = match.Success ? match.Length : 0;
+        return match.Success;
     }
 
     // Removes a list marker (bullet, numbered, or task) from a line, if present. Task is checked
