@@ -45,9 +45,9 @@ public sealed class MarkdownService : IMarkdownService
             MarkdownFormat.Header6 => ToggleHeading(content, selectionStart, selectionLength, 6),
             MarkdownFormat.Blockquote => Splice(content, selectionStart, selectionLength, LinePrefix(selected, "> ")),
             // Lists toggle per line and switch type rather than stack, mirroring headings.
-            MarkdownFormat.BulletList => ToggleList(content, selectionStart, selectionLength, ListKind.Bullet, 1),
-            MarkdownFormat.NumberedList => ToggleList(content, selectionStart, selectionLength, ListKind.Numbered, numberedListStart),
-            MarkdownFormat.TaskList => ToggleList(content, selectionStart, selectionLength, ListKind.Task, 1),
+            MarkdownFormat.BulletList => ToggleBulletList(content, selectionStart, selectionLength),
+            MarkdownFormat.NumberedList => ToggleNumberedList(content, selectionStart, selectionLength, numberedListStart),
+            MarkdownFormat.TaskList => ToggleTaskList(content, selectionStart, selectionLength),
             _ => throw new NotSupportedException($"Formatting '{format}' is not yet implemented.")
         };
     }
@@ -99,17 +99,13 @@ public sealed class MarkdownService : IMarkdownService
     private static string ToggleHeading(string content, int start, int length, int level)
     {
         var prefix = new string('#', level) + " ";
-
-        // Expand the selection to the full lines it touches.
-        var spanStart = LineStart(content, start);
-        var spanEnd = LineEnd(content, length > 0 ? start + length - 1 : start);
-        var lines = content.Substring(spanStart, spanEnd - spanStart).Split('\n');
+        var (spanStart, spanLength, lines) = GetSelectionFullLines(content, start, length);
 
         var toggled = lines.All(line => HeadingLevel(line) == level)
             ? lines.Select(StripHeading)
             : lines.Select(line => prefix + StripHeading(line));
 
-        return Splice(content, spanStart, spanEnd - spanStart, string.Join('\n', toggled));
+        return Splice(content, spanStart, spanLength, string.Join('\n', toggled));
     }
 
     // Start of the line containing index (just after the previous newline, or 0).
@@ -151,73 +147,87 @@ public sealed class MarkdownService : IMarkdownService
         return level < line.Length && line[level] is ' ' or '\t' ? line[(level + 1)..] : line[level..];
     }
 
-    // A list marker carried by a single line.
-    private enum ListKind { None, Bullet, Numbered, Task }
-
     /// <summary>
-    /// Applies a list marker of <paramref name="kind"/> to every line the selection touches, as a
-    /// uniform toggle: if all touched lines already carry that exact kind it is removed; otherwise
-    /// each line is set to it, replacing any existing list marker (so the type switches rather than
-    /// stacks). Numbered lists count sequentially from <paramref name="numberStart"/>.
+    /// Expands the selection <c>[<paramref name="start"/>, start + <paramref name="length"/>)</c>
+    /// to the full lines it touches and returns those lines together with the span they occupy,
+    /// so a per-line transform can be spliced back into <paramref name="content"/>. Shared by the
+    /// per-line formats (headings, lists).
     /// </summary>
-    private static string ToggleList(string content, int start, int length, ListKind kind, int numberStart)
+    private static (int Start, int Length, string[] Lines) GetSelectionFullLines(string content, int start, int length)
     {
-        // Expand the selection to the full lines it touches.
         var spanStart = LineStart(content, start);
         var spanEnd = LineEnd(content, length > 0 ? start + length - 1 : start);
-        var lines = content.Substring(spanStart, spanEnd - spanStart).Split('\n');
-
-        var toggled = lines.All(line => ListKindOf(line, out _) == kind)
-            ? lines.Select(StripList)
-            : lines.Select((line, i) => kind switch
-            {
-                ListKind.Bullet => "- " + StripList(line),
-                ListKind.Task => "- [ ] " + StripList(line),
-                ListKind.Numbered => $"{numberStart + i}. " + StripList(line),
-                _ => line
-            });
-
-        return Splice(content, spanStart, spanEnd - spanStart, string.Join('\n', toggled));
+        return (spanStart, spanEnd - spanStart, content[spanStart..spanEnd].Split('\n'));
     }
 
-    // The list marker a line carries, with the length of that marker (so it can be stripped).
-    // Task is checked before Bullet because a task marker ("- [ ] ") begins with a bullet one.
-    private static ListKind ListKindOf(string line, out int markerLength)
+    // Each list toggle applies its marker to every line the selection touches, as a uniform toggle:
+    // if all touched lines already carry that kind it is removed; otherwise each line is set to it,
+    // replacing any existing list marker (so the type switches rather than stacks).
+
+    private static string ToggleBulletList(string content, int start, int length)
+    {
+        var (spanStart, spanLength, lines) = GetSelectionFullLines(content, start, length);
+        var toggled = lines.All(IsBullet)
+            ? lines.Select(StripList)
+            : lines.Select(line => "- " + StripList(line));
+        return Splice(content, spanStart, spanLength, string.Join('\n', toggled));
+    }
+
+    private static string ToggleTaskList(string content, int start, int length)
+    {
+        var (spanStart, spanLength, lines) = GetSelectionFullLines(content, start, length);
+        var toggled = lines.All(IsTask)
+            ? lines.Select(StripList)
+            : lines.Select(line => "- [ ] " + StripList(line));
+        return Splice(content, spanStart, spanLength, string.Join('\n', toggled));
+    }
+
+    // Numbered lists count sequentially from numberStart so a list can continue a preceding one.
+    private static string ToggleNumberedList(string content, int start, int length, int numberStart)
+    {
+        var (spanStart, spanLength, lines) = GetSelectionFullLines(content, start, length);
+        var toggled = lines.All(line => IsNumbered(line, out _))
+            ? lines.Select(StripList)
+            : lines.Select((line, i) => $"{numberStart + i}. " + StripList(line));
+        return Splice(content, spanStart, spanLength, string.Join('\n', toggled));
+    }
+
+    // A task item: a bullet char, "[ ]"/"[x]"/"[X]", then a space, e.g. "- [ ] ".
+    private static bool IsTask(string line) =>
+        line.Length >= 6 &&
+        line[0] is '-' or '*' or '+' && line[1] == ' ' &&
+        line[2] == '[' && line[3] is ' ' or 'x' or 'X' && line[4] == ']' && line[5] == ' ';
+
+    // A bullet item: a bullet char followed by a space — but NOT a task, whose marker begins the
+    // same way, so the check must exclude it (this encodes the task-before-bullet precedence).
+    private static bool IsBullet(string line) =>
+        line.Length >= 2 && line[0] is '-' or '*' or '+' && line[1] == ' ' && !IsTask(line);
+
+    // A numbered item: one or more digits, a '.' or ')' delimiter, then a space (per CommonMark).
+    private static bool IsNumbered(string line, out int markerLength)
     {
         markerLength = 0;
-
-        // Task: a bullet char, "[ ]"/"[x]"/"[X]", then a space, e.g. "- [ ] ".
-        if (line.Length >= 6 &&
-            line[0] is '-' or '*' or '+' && line[1] == ' ' &&
-            line[2] == '[' && line[3] is ' ' or 'x' or 'X' && line[4] == ']' && line[5] == ' ')
-        {
-            markerLength = 6;
-            return ListKind.Task;
-        }
-
-        // Bullet: a bullet char followed by a space.
-        if (line.Length >= 2 && line[0] is '-' or '*' or '+' && line[1] == ' ')
-        {
-            markerLength = 2;
-            return ListKind.Bullet;
-        }
-
-        // Numbered: one or more digits, a '.' or ')' delimiter, then a space (per CommonMark).
         var digits = 0;
         while (digits < line.Length && char.IsAsciiDigit(line[digits]))
             digits++;
-        if (digits > 0 && digits + 1 < line.Length && line[digits] is '.' or ')' && line[digits + 1] == ' ')
-        {
-            markerLength = digits + 2;
-            return ListKind.Numbered;
-        }
-
-        return ListKind.None;
+        if (digits == 0 || digits + 1 >= line.Length || line[digits] is not ('.' or ')') || line[digits + 1] != ' ')
+            return false;
+        markerLength = digits + 2;
+        return true;
     }
 
-    // Removes a list marker (bullet, numbered, or task) from a line, if present.
-    private static string StripList(string line) =>
-        ListKindOf(line, out var markerLength) == ListKind.None ? line : line[markerLength..];
+    // Removes a list marker (bullet, numbered, or task) from a line, if present. Task is checked
+    // before bullet because a task marker ("- [ ] ") begins with a bullet one.
+    private static string StripList(string line)
+    {
+        if (IsTask(line))
+            return line[6..];
+        if (IsBullet(line))
+            return line[2..];
+        if (IsNumbered(line, out var markerLength))
+            return line[markerLength..];
+        return line;
+    }
 
     private static string Splice(string content, int start, int length, string replacement) =>
         string.Concat(content.AsSpan(0, start), replacement, content.AsSpan(start + length));
