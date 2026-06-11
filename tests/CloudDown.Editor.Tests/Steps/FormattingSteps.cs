@@ -13,6 +13,8 @@ public sealed class FormattingSteps
     private string _content = string.Empty;
     private int _selectionStart;
     private int _selectionLength;
+    private int _resultSelectionStart;
+    private int _resultSelectionLength;
 
     [Given("the editor contains \"(.*)\"")]
     public void GivenTheEditorContains(string content) => _content = content;
@@ -26,9 +28,18 @@ public sealed class FormattingSteps
     }
 
     [When("I apply (.*) formatting")]
-    public void WhenIApplyFormatting(MarkdownFormat format) =>
-        _content = _service.ApplyFormatting(_content, format, _selectionStart, _selectionLength);
+    public void WhenIApplyFormatting(MarkdownFormat format)
+    {
+        var result = _service.ApplyFormatting(_content, format, _selectionStart, _selectionLength);
+        _content = result.Content;
+        _resultSelectionStart = result.SelectionStart;
+        _resultSelectionLength = result.SelectionLength;
+    }
 
     [Then("the content should be \"(.*)\"")]
     public void ThenTheContentShouldBe(string expected) => _content.Should().Be(expected);
+
+    [Then("the selected text should be \"(.*)\"")]
+    public void ThenTheSelectedTextShouldBe(string expected) =>
+        _content.Substring(_resultSelectionStart, _resultSelectionLength).Should().Be(expected);
 }

@@ -19,7 +19,7 @@ public sealed partial class MarkdownService : IMarkdownService
         Markdown.ToHtml(markdown, _pipeline);
 
     /// <inheritdoc />
-    public string ApplyFormatting(string content, MarkdownFormat format, int selectionStart, int selectionLength, int numberedListStart = 1)
+    public FormattingResult ApplyFormatting(string content, MarkdownFormat format, int selectionStart, int selectionLength, int numberedListStart = 1)
     {
         if (selectionStart < 0 || selectionLength < 0 || selectionStart + selectionLength > content.Length)
             throw new ArgumentOutOfRangeException(nameof(selectionStart),
@@ -36,7 +36,7 @@ public sealed partial class MarkdownService : IMarkdownService
             MarkdownFormat.Bold => ToggleInline(content, selectionStart, selectionLength, "**"),
             MarkdownFormat.Italic => ToggleInline(content, selectionStart, selectionLength, "*"),
             MarkdownFormat.Strikethrough => ToggleInline(content, selectionStart, selectionLength, "~~"),
-            MarkdownFormat.InlineCode => Splice(content, selectionStart, selectionLength, Wrap(selected, "`")),
+            MarkdownFormat.InlineCode => SpliceSelecting(content, selectionStart, selectionLength, Wrap(selected, "`")),
             // Headings toggle per line and switch level rather than stack.
             MarkdownFormat.Header1 => ToggleHeading(content, selectionStart, selectionLength, 1),
             MarkdownFormat.Header2 => ToggleHeading(content, selectionStart, selectionLength, 2),
@@ -44,11 +44,14 @@ public sealed partial class MarkdownService : IMarkdownService
             MarkdownFormat.Header4 => ToggleHeading(content, selectionStart, selectionLength, 4),
             MarkdownFormat.Header5 => ToggleHeading(content, selectionStart, selectionLength, 5),
             MarkdownFormat.Header6 => ToggleHeading(content, selectionStart, selectionLength, 6),
-            MarkdownFormat.Blockquote => Splice(content, selectionStart, selectionLength, LinePrefix(selected, "> ")),
+            MarkdownFormat.Blockquote => SpliceSelecting(content, selectionStart, selectionLength, LinePrefix(selected, "> ")),
             // Lists toggle per line and switch type rather than stack, mirroring headings.
             MarkdownFormat.BulletList => ToggleBulletList(content, selectionStart, selectionLength),
             MarkdownFormat.NumberedList => ToggleNumberedList(content, selectionStart, selectionLength, numberedListStart),
             MarkdownFormat.TaskList => ToggleTaskList(content, selectionStart, selectionLength),
+            // Links/images insert [text](url) / ![alt](url), selecting the url placeholder.
+            MarkdownFormat.Link => InsertLink(content, selectionStart, selectionLength, isImage: false),
+            MarkdownFormat.Image => InsertLink(content, selectionStart, selectionLength, isImage: true),
             _ => throw new NotSupportedException($"Formatting '{format}' is not yet implemented.")
         };
     }
@@ -59,7 +62,7 @@ public sealed partial class MarkdownService : IMarkdownService
     /// of the selection (<c>**cat**</c>) or sit immediately outside it (<c>cat</c> within
     /// <c>**cat**</c>) — the markers are removed; otherwise the selection is wrapped.
     /// </summary>
-    private static string ToggleInline(string content, int start, int length, string marker)
+    private static FormattingResult ToggleInline(string content, int start, int length, string marker)
     {
         var selected = content.Substring(start, length);
         var markerLength = marker.Length;
@@ -87,7 +90,7 @@ public sealed partial class MarkdownService : IMarkdownService
             replacement = Wrap(selected, marker);
         }
 
-        return Splice(content, start, length, replacement);
+        return SpliceSelecting(content, start, length, replacement);
     }
 
     /// <summary>
@@ -97,7 +100,7 @@ public sealed partial class MarkdownService : IMarkdownService
     /// level switches rather than stacks). Works on a partial-line selection — the heading
     /// always applies at the start of the line.
     /// </summary>
-    private static string ToggleHeading(string content, int start, int length, int level)
+    private static FormattingResult ToggleHeading(string content, int start, int length, int level)
     {
         var prefix = new string('#', level) + " ";
         var (spanStart, spanLength, lines) = GetSelectionFullLines(content, start, length);
@@ -106,7 +109,7 @@ public sealed partial class MarkdownService : IMarkdownService
             ? lines.Select(StripHeading)
             : lines.Select(line => prefix + StripHeading(line));
 
-        return Splice(content, spanStart, spanLength, string.Join('\n', toggled));
+        return SpliceSelecting(content, spanStart, spanLength, string.Join('\n', toggled));
     }
 
     // Start of the line containing index (just after the previous newline, or 0).
@@ -165,32 +168,32 @@ public sealed partial class MarkdownService : IMarkdownService
     // if all touched lines already carry that kind it is removed; otherwise each line is set to it,
     // replacing any existing list marker (so the type switches rather than stacks).
 
-    private static string ToggleBulletList(string content, int start, int length)
+    private static FormattingResult ToggleBulletList(string content, int start, int length)
     {
         var (spanStart, spanLength, lines) = GetSelectionFullLines(content, start, length);
         var toggled = lines.All(IsBullet)
             ? lines.Select(StripList)
             : lines.Select(line => "- " + StripList(line));
-        return Splice(content, spanStart, spanLength, string.Join('\n', toggled));
+        return SpliceSelecting(content, spanStart, spanLength, string.Join('\n', toggled));
     }
 
-    private static string ToggleTaskList(string content, int start, int length)
+    private static FormattingResult ToggleTaskList(string content, int start, int length)
     {
         var (spanStart, spanLength, lines) = GetSelectionFullLines(content, start, length);
         var toggled = lines.All(IsTask)
             ? lines.Select(StripList)
             : lines.Select(line => "- [ ] " + StripList(line));
-        return Splice(content, spanStart, spanLength, string.Join('\n', toggled));
+        return SpliceSelecting(content, spanStart, spanLength, string.Join('\n', toggled));
     }
 
     // Numbered lists count sequentially from numberStart so a list can continue a preceding one.
-    private static string ToggleNumberedList(string content, int start, int length, int numberStart)
+    private static FormattingResult ToggleNumberedList(string content, int start, int length, int numberStart)
     {
         var (spanStart, spanLength, lines) = GetSelectionFullLines(content, start, length);
         var toggled = lines.All(line => IsNumbered(line, out _))
             ? lines.Select(StripList)
             : lines.Select((line, i) => $"{numberStart + i}. " + StripList(line));
-        return Splice(content, spanStart, spanLength, string.Join('\n', toggled));
+        return SpliceSelecting(content, spanStart, spanLength, string.Join('\n', toggled));
     }
 
     // A task item: a bullet char, "[ ]"/"[x]"/"[X]", then a space, e.g. "- [ ] ".
@@ -228,8 +231,31 @@ public sealed partial class MarkdownService : IMarkdownService
         return line;
     }
 
+    /// <summary>
+    /// Inserts a link <c>[text](url)</c> or image <c>![alt](url)</c> at the selection, using the
+    /// selected text as the link text / image alt (or a <c>text</c>/<c>alt</c> placeholder when the
+    /// selection is empty), and selecting the <c>url</c> placeholder so the caret lands where the
+    /// user types the address.
+    /// </summary>
+    private static FormattingResult InsertLink(string content, int start, int length, bool isImage)
+    {
+        const string url = "url";
+        var prefix = isImage ? "![" : "[";
+        var text = length > 0 ? content.Substring(start, length) : (isImage ? "alt" : "text");
+
+        var replacement = $"{prefix}{text}]({url})";
+        // The url placeholder sits just past the opening prefix, the text, and the "](" delimiter.
+        var urlStart = start + prefix.Length + text.Length + 2;
+        return new FormattingResult(Splice(content, start, length, replacement), urlStart, url.Length);
+    }
+
     private static string Splice(string content, int start, int length, string replacement) =>
         string.Concat(content.AsSpan(0, start), replacement, content.AsSpan(start + length));
+
+    // Splices replacement into [start, start+length) and selects the whole inserted replacement,
+    // so the affected text stays highlighted after the operation.
+    private static FormattingResult SpliceSelecting(string content, int start, int length, string replacement) =>
+        new(Splice(content, start, length, replacement), start, replacement.Length);
 
     private static string Wrap(string text, string marker) => $"{marker}{text}{marker}";
 

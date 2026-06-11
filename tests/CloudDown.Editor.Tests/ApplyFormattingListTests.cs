@@ -50,7 +50,7 @@ public class ApplyFormattingListTests
         string expected)
     {
         var start = content.IndexOf(selection, StringComparison.Ordinal);
-        _service.ApplyFormatting(content, format, start, selection.Length).Should().Be(expected);
+        _service.ApplyFormatting(content, format, start, selection.Length).Content.Should().Be(expected);
     }
 
     [Test]
@@ -58,7 +58,7 @@ public class ApplyFormattingListTests
     {
         const string content = "milk\neggs";
         _service.ApplyFormatting(content, MarkdownFormat.BulletList, 0, content.Length)
-            .Should().Be("- milk\n- eggs");
+            .Content.Should().Be("- milk\n- eggs");
     }
 
     [Test]
@@ -66,7 +66,7 @@ public class ApplyFormattingListTests
     {
         const string content = "milk\neggs\nbread";
         _service.ApplyFormatting(content, MarkdownFormat.NumberedList, 0, content.Length)
-            .Should().Be("1. milk\n2. eggs\n3. bread");
+            .Content.Should().Be("1. milk\n2. eggs\n3. bread");
     }
 
     [Test]
@@ -75,14 +75,14 @@ public class ApplyFormattingListTests
         // A custom start lets the list continue a preceding one (here, picking up at 4).
         const string content = "milk\neggs\nbread";
         _service.ApplyFormatting(content, MarkdownFormat.NumberedList, 0, content.Length, numberedListStart: 4)
-            .Should().Be("4. milk\n5. eggs\n6. bread");
+            .Content.Should().Be("4. milk\n5. eggs\n6. bread");
     }
 
     [Test]
     public void ApplyFormatting_NumberedList_DefaultsToStartingAtOne()
     {
         _service.ApplyFormatting("milk", MarkdownFormat.NumberedList, 0, 4)
-            .Should().Be("1. milk");
+            .Content.Should().Be("1. milk");
     }
 
     [Test]
@@ -97,7 +97,7 @@ public class ApplyFormattingListTests
     {
         const string content = "- milk\n- eggs";
         _service.ApplyFormatting(content, MarkdownFormat.BulletList, 0, content.Length)
-            .Should().Be("milk\neggs");
+            .Content.Should().Be("milk\neggs");
     }
 
     [Test]
@@ -105,7 +105,7 @@ public class ApplyFormattingListTests
     {
         const string content = "1. milk\n2. eggs\n3. bread";
         _service.ApplyFormatting(content, MarkdownFormat.NumberedList, 0, content.Length)
-            .Should().Be("milk\neggs\nbread");
+            .Content.Should().Be("milk\neggs\nbread");
     }
 
     [Test]
@@ -114,7 +114,7 @@ public class ApplyFormattingListTests
         // Not all lines are bullets, so every line is set to bullet (switching the numbered one).
         const string content = "- milk\n1. eggs";
         _service.ApplyFormatting(content, MarkdownFormat.BulletList, 0, content.Length)
-            .Should().Be("- milk\n- eggs");
+            .Content.Should().Be("- milk\n- eggs");
     }
 
     [Test]
@@ -122,6 +122,6 @@ public class ApplyFormattingListTests
     {
         const string content = "- milk\n- eggs\n- bread";
         _service.ApplyFormatting(content, MarkdownFormat.NumberedList, 0, content.Length)
-            .Should().Be("1. milk\n2. eggs\n3. bread");
+            .Content.Should().Be("1. milk\n2. eggs\n3. bread");
     }
 }
