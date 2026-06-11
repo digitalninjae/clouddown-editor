@@ -91,3 +91,11 @@ Scenario: Applying a link selects the url placeholder for the user to type
     When I apply Link formatting
     Then the content should be "see [Anthropic](url) here"
     And the selected text should be "url"
+
+Scenario: The text selection preference selects the link label instead of the url
+    Given the link selection preference is Text
+    And the editor contains "see Anthropic here"
+    And the text "Anthropic" is selected
+    When I apply Link formatting
+    Then the content should be "see [Anthropic](url) here"
+    And the selected text should be "Anthropic"

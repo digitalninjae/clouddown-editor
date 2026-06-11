@@ -16,6 +16,10 @@ public sealed class FormattingSteps
     private int _resultSelectionStart;
     private int _resultSelectionLength;
 
+    [Given("the link selection preference is (.*)")]
+    public void GivenTheLinkSelectionPreferenceIs(LinkSelectionTarget target) =>
+        _service.FormattingOptions.LinkSelectionTarget = target;
+
     [Given("the editor contains \"(.*)\"")]
     public void GivenTheEditorContains(string content) => _content = content;
 
