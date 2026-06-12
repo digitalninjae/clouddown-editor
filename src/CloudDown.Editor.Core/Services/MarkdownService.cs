@@ -31,7 +31,9 @@ public sealed partial class MarkdownService : IMarkdownService
             throw new ArgumentOutOfRangeException(nameof(numberedListStart),
                 "A numbered list cannot start below zero.");
 
-        var selected = content.Substring(selectionStart, selectionLength);
+        // The line ending used for any separator an operation emits (block ops, per-line rejoins),
+        // resolved once from the options / content so the whole call is consistent.
+        var eol = ResolveLineEnding(content);
 
         return format switch
         {
@@ -39,19 +41,22 @@ public sealed partial class MarkdownService : IMarkdownService
             MarkdownFormat.Bold => ToggleInline(content, selectionStart, selectionLength, "**"),
             MarkdownFormat.Italic => ToggleInline(content, selectionStart, selectionLength, "*"),
             MarkdownFormat.Strikethrough => ToggleInline(content, selectionStart, selectionLength, "~~"),
-            MarkdownFormat.InlineCode => ReplaceAndSelect(content, selectionStart, selectionLength, Wrap(selected, "`")),
+            MarkdownFormat.InlineCode => ToggleInline(content, selectionStart, selectionLength, "`"),
             // Headings toggle per line and switch level rather than stack.
-            MarkdownFormat.Header1 => ToggleHeading(content, selectionStart, selectionLength, 1),
-            MarkdownFormat.Header2 => ToggleHeading(content, selectionStart, selectionLength, 2),
-            MarkdownFormat.Header3 => ToggleHeading(content, selectionStart, selectionLength, 3),
-            MarkdownFormat.Header4 => ToggleHeading(content, selectionStart, selectionLength, 4),
-            MarkdownFormat.Header5 => ToggleHeading(content, selectionStart, selectionLength, 5),
-            MarkdownFormat.Header6 => ToggleHeading(content, selectionStart, selectionLength, 6),
-            MarkdownFormat.Blockquote => ReplaceAndSelect(content, selectionStart, selectionLength, LinePrefix(selected, "> ")),
+            MarkdownFormat.Header1 => ToggleHeading(content, selectionStart, selectionLength, 1, eol),
+            MarkdownFormat.Header2 => ToggleHeading(content, selectionStart, selectionLength, 2, eol),
+            MarkdownFormat.Header3 => ToggleHeading(content, selectionStart, selectionLength, 3, eol),
+            MarkdownFormat.Header4 => ToggleHeading(content, selectionStart, selectionLength, 4, eol),
+            MarkdownFormat.Header5 => ToggleHeading(content, selectionStart, selectionLength, 5, eol),
+            MarkdownFormat.Header6 => ToggleHeading(content, selectionStart, selectionLength, 6, eol),
+            MarkdownFormat.Blockquote => ToggleBlockquote(content, selectionStart, selectionLength, eol),
             // Lists toggle per line and switch type rather than stack, mirroring headings.
-            MarkdownFormat.BulletList => ToggleBulletList(content, selectionStart, selectionLength),
-            MarkdownFormat.NumberedList => ToggleNumberedList(content, selectionStart, selectionLength, numberedListStart),
-            MarkdownFormat.TaskList => ToggleTaskList(content, selectionStart, selectionLength),
+            MarkdownFormat.BulletList => ToggleBulletList(content, selectionStart, selectionLength, eol),
+            MarkdownFormat.NumberedList => ToggleNumberedList(content, selectionStart, selectionLength, numberedListStart, eol),
+            MarkdownFormat.TaskList => ToggleTaskList(content, selectionStart, selectionLength, eol),
+            // Code block fences and horizontal rules sit on their own lines, so they emit eol.
+            MarkdownFormat.CodeBlock => ToggleCodeBlock(content, selectionStart, selectionLength, eol),
+            MarkdownFormat.HorizontalRule => InsertHorizontalRule(content, selectionStart, selectionLength, eol),
             // Links/images insert [text](url) / ![alt](url); the configured target picks which
             // placeholder is selected (url by default).
             MarkdownFormat.Link => InsertLink(content, selectionStart, selectionLength, isImage: false, FormattingOptions.LinkSelectionTarget),
@@ -104,7 +109,7 @@ public sealed partial class MarkdownService : IMarkdownService
     /// level switches rather than stacks). Works on a partial-line selection — the heading
     /// always applies at the start of the line.
     /// </summary>
-    private static FormattingResult ToggleHeading(string content, int start, int length, int level)
+    private static FormattingResult ToggleHeading(string content, int start, int length, int level, string eol)
     {
         var prefix = new string('#', level) + " ";
         var (spanStart, spanLength, lines) = GetSelectionFullLines(content, start, length);
@@ -113,7 +118,7 @@ public sealed partial class MarkdownService : IMarkdownService
             ? lines.Select(StripHeading)
             : lines.Select(line => prefix + StripHeading(line));
 
-        return ReplaceAndSelect(content, spanStart, spanLength, string.Join('\n', toggled));
+        return ReplaceAndSelect(content, spanStart, spanLength, string.Join(eol, toggled));
     }
 
     // Start of the line containing index (just after the previous newline, or 0).
@@ -125,13 +130,27 @@ public sealed partial class MarkdownService : IMarkdownService
         return i;
     }
 
-    // End of the line containing index (the next newline, or the content length).
+    // End of the line containing index: the start of the next line break (CR or LF), or the content
+    // length. Stopping before the break means a CRLF line's span never includes a trailing '\r',
+    // so it cannot be lost when the line is transformed and rejoined.
     private static int LineEnd(string content, int index)
     {
         var i = Math.Min(index, content.Length);
-        while (i < content.Length && content[i] != '\n')
+        while (i < content.Length && content[i] is not ('\n' or '\r'))
             i++;
         return i;
+    }
+
+    // Splits text into lines on LF, dropping a trailing CR from each so CRLF and LF content yield
+    // the same line content. Callers rejoin with the resolved line ending, so reading is universal
+    // while writing honors the configured / detected ending.
+    private static string[] SplitLines(string text)
+    {
+        var lines = text.Split('\n');
+        for (var i = 0; i < lines.Length; i++)
+            if (lines[i].EndsWith('\r'))
+                lines[i] = lines[i][..^1];
+        return lines;
     }
 
     // ATX heading level (1–6) if the line is a heading — 1–6 '#' followed by a space, tab, or
@@ -159,45 +178,57 @@ public sealed partial class MarkdownService : IMarkdownService
     /// Expands the selection <c>[<paramref name="start"/>, start + <paramref name="length"/>)</c>
     /// to the full lines it touches and returns those lines together with the span they occupy,
     /// so a per-line transform can be spliced back into <paramref name="content"/>. Shared by the
-    /// per-line formats (headings, lists).
+    /// per-line formats (headings, lists, blockquotes).
     /// </summary>
     private static (int Start, int Length, string[] Lines) GetSelectionFullLines(string content, int start, int length)
     {
         var spanStart = LineStart(content, start);
         var spanEnd = LineEnd(content, length > 0 ? start + length - 1 : start);
-        return (spanStart, spanEnd - spanStart, content[spanStart..spanEnd].Split('\n'));
+        return (spanStart, spanEnd - spanStart, SplitLines(content[spanStart..spanEnd]));
     }
 
     // Each list toggle applies its marker to every line the selection touches, as a uniform toggle:
     // if all touched lines already carry that kind it is removed; otherwise each line is set to it,
     // replacing any existing list marker (so the type switches rather than stacks).
 
-    private static FormattingResult ToggleBulletList(string content, int start, int length)
+    private static FormattingResult ToggleBulletList(string content, int start, int length, string eol)
     {
         var (spanStart, spanLength, lines) = GetSelectionFullLines(content, start, length);
         var toggled = lines.All(IsBullet)
             ? lines.Select(StripList)
             : lines.Select(line => "- " + StripList(line));
-        return ReplaceAndSelect(content, spanStart, spanLength, string.Join('\n', toggled));
+        return ReplaceAndSelect(content, spanStart, spanLength, string.Join(eol, toggled));
     }
 
-    private static FormattingResult ToggleTaskList(string content, int start, int length)
+    private static FormattingResult ToggleTaskList(string content, int start, int length, string eol)
     {
         var (spanStart, spanLength, lines) = GetSelectionFullLines(content, start, length);
         var toggled = lines.All(IsTask)
             ? lines.Select(StripList)
             : lines.Select(line => "- [ ] " + StripList(line));
-        return ReplaceAndSelect(content, spanStart, spanLength, string.Join('\n', toggled));
+        return ReplaceAndSelect(content, spanStart, spanLength, string.Join(eol, toggled));
     }
 
     // Numbered lists count sequentially from numberStart so a list can continue a preceding one.
-    private static FormattingResult ToggleNumberedList(string content, int start, int length, int numberStart)
+    private static FormattingResult ToggleNumberedList(string content, int start, int length, int numberStart, string eol)
     {
         var (spanStart, spanLength, lines) = GetSelectionFullLines(content, start, length);
         var toggled = lines.All(line => IsNumbered(line, out _))
             ? lines.Select(StripList)
             : lines.Select((line, i) => $"{numberStart + i}. " + StripList(line));
-        return ReplaceAndSelect(content, spanStart, spanLength, string.Join('\n', toggled));
+        return ReplaceAndSelect(content, spanStart, spanLength, string.Join(eol, toggled));
+    }
+
+    // Blockquotes apply a "> " marker to every line the selection touches, toggling per the same
+    // uniform rule as headings/lists: if all touched lines are already quoted the marker is removed,
+    // otherwise it is added (re-quoting an already-quoted line nests it, mirroring CommonMark).
+    private static FormattingResult ToggleBlockquote(string content, int start, int length, string eol)
+    {
+        var (spanStart, spanLength, lines) = GetSelectionFullLines(content, start, length);
+        var toggled = lines.All(IsBlockquote)
+            ? lines.Select(StripBlockquote)
+            : lines.Select(line => "> " + line);
+        return ReplaceAndSelect(content, spanStart, spanLength, string.Join(eol, toggled));
     }
 
     // A task item: a bullet char, "[ ]"/"[x]"/"[X]", then a space, e.g. "- [ ] ".
@@ -235,6 +266,18 @@ public sealed partial class MarkdownService : IMarkdownService
         return line;
     }
 
+    // A blockquote line: a '>' marker at the start (per CommonMark, the following space is optional).
+    private static bool IsBlockquote(string line) => line.StartsWith('>');
+
+    // Removes one level of blockquote marker ('>' and one optional following space) from a line.
+    private static string StripBlockquote(string line)
+    {
+        if (!IsBlockquote(line))
+            return line;
+        var rest = line[1..];
+        return rest.StartsWith(' ') ? rest[1..] : rest;
+    }
+
     /// <summary>
     /// Inserts a link <c>[text](url)</c> or image <c>![alt](url)</c> at the selection, using the
     /// selected text as the link text / image alt (or a <c>text</c>/<c>alt</c> placeholder when the
@@ -268,5 +311,80 @@ public sealed partial class MarkdownService : IMarkdownService
 
     private static string Wrap(string text, string marker) => $"{marker}{text}{marker}";
 
-    private static string LinePrefix(string text, string prefix) => $"{prefix}{text}";
+    /// <summary>
+    /// Wraps the selected line(s) in a fenced code block — an opening <c>```lang</c> fence and a
+    /// closing <c>```</c> fence, each on its own line — and lands the selection on the <c>lang</c>
+    /// placeholder so the user can name the language. Toggles: when the touched lines already form
+    /// a fenced block, the fences are stripped instead and the inner content re-selected.
+    /// </summary>
+    private static FormattingResult ToggleCodeBlock(string content, int start, int length, string eol)
+    {
+        const string lang = "lang";
+        const string fence = "```";
+        var spanStart = LineStart(content, start);
+        var spanEnd = LineEnd(content, length > 0 ? start + length - 1 : start);
+        var span = content[spanStart..spanEnd];
+        var lines = SplitLines(span);
+
+        // Already fenced (open + close fence lines around a body): strip the fences, keep the body.
+        if (lines.Length >= 2 && IsFenceLine(lines[0]) && IsFenceLine(lines[^1]))
+        {
+            var inner = string.Join(eol, lines[1..^1]);
+            return ReplaceAndSelect(content, spanStart, spanEnd - spanStart, inner);
+        }
+
+        var spliced = Splice(content, spanStart, spanEnd - spanStart, $"{fence}{lang}{eol}{span}{eol}{fence}");
+        // The lang placeholder sits immediately after the opening fence on the first line.
+        return new FormattingResult(spliced, spanStart + fence.Length, lang.Length);
+    }
+
+    // A fence line opens or closes a code block: three or more backticks at the line start.
+    private static bool IsFenceLine(string line) => line.StartsWith("```", StringComparison.Ordinal);
+
+    /// <summary>
+    /// Inserts a horizontal rule (<c>---</c>). With a selection, the touched lines are wrapped with a
+    /// rule on its own line both before and after, and the wrapped text stays selected. With no
+    /// selection, a single rule is inserted on its own line at the caret (adding the surrounding
+    /// line breaks only where the caret is not already at a line boundary), with the rule selected.
+    /// </summary>
+    private static FormattingResult InsertHorizontalRule(string content, int start, int length, string eol)
+    {
+        const string rule = "---";
+
+        if (length > 0)
+        {
+            var spanStart = LineStart(content, start);
+            var spanEnd = LineEnd(content, start + length - 1);
+            var span = content[spanStart..spanEnd];
+            var spliced = Splice(content, spanStart, spanEnd - spanStart, $"{rule}{eol}{span}{eol}{rule}");
+            // Re-select the original text, now sitting between the two rules.
+            return new FormattingResult(spliced, spanStart + rule.Length + eol.Length, span.Length);
+        }
+
+        var atLineStart = start == 0 || content[start - 1] == '\n';
+        var atLineEnd = start == content.Length || content[start] is '\n' or '\r';
+        var before = atLineStart ? string.Empty : eol;
+        var after = atLineEnd ? string.Empty : eol;
+        var inserted = Splice(content, start, 0, $"{before}{rule}{after}");
+        return new FormattingResult(inserted, start + before.Length, rule.Length);
+    }
+
+    // Resolves the line ending to emit: the configured override, or the document's own ending.
+    private string ResolveLineEnding(string content) =>
+        FormattingOptions.LineEnding switch
+        {
+            LineEndingMode.Lf => "\n",
+            LineEndingMode.CrLf => "\r\n",
+            _ => DetectLineEnding(content)
+        };
+
+    // Detects the document's line ending from its first break (CRLF vs LF), falling back to the
+    // host's newline when there is none to detect (empty or single-line content).
+    private static string DetectLineEnding(string content)
+    {
+        var newline = content.IndexOf('\n');
+        if (newline < 0)
+            return Environment.NewLine;
+        return newline > 0 && content[newline - 1] == '\r' ? "\r\n" : "\n";
+    }
 }
