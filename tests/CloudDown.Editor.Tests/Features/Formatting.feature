@@ -136,7 +136,7 @@ Scenario: Applying a horizontal rule to a selection wraps it between rules
     And the editor contains "the cat sat"
     And the text "the cat sat" is selected
     When I apply HorizontalRule formatting
-    Then the content should be "---\nthe cat sat\n---"
+    Then the content should be "---\n\nthe cat sat\n\n---"
 
 Scenario: Operations preserve the document's own line ending
     Given the editor contains "alpha\r\nbeta"
@@ -150,3 +150,17 @@ Scenario: The line-ending override normalizes regardless of the content
     And the text "alpha\r\nbeta" is selected
     When I apply BulletList formatting
     Then the content should be "- alpha\n- beta"
+
+Scenario: Applying emphasis with nothing selected inserts empty markers
+    Given the editor contains ""
+    And the caret is at the start
+    When I apply Bold formatting
+    Then the content should be "****"
+    And the selected text should be "****"
+
+Scenario: Toggling a format off restores the original text
+    Given the editor contains "the cat sat"
+    And the text "cat" is selected
+    When I apply Bold formatting
+    And I apply Bold formatting
+    Then the content should be "the cat sat"

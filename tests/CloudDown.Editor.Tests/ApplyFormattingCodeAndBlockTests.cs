@@ -99,7 +99,8 @@ public class ApplyFormattingCodeAndBlockTests
     public void ApplyFormatting_HorizontalRule_WithSelection_WrapsTextBetweenRules()
     {
         var result = Apply("the cat sat", MarkdownFormat.HorizontalRule, "the cat sat");
-        result.Content.Should().Be("---\nthe cat sat\n---");
+        // Blank lines around each rule keep them thematic breaks (not a Setext heading underline).
+        result.Content.Should().Be("---\n\nthe cat sat\n\n---");
         // The wrapped text stays selected.
         result.Content.Substring(result.SelectionStart, result.SelectionLength).Should().Be("the cat sat");
     }
@@ -107,9 +108,9 @@ public class ApplyFormattingCodeAndBlockTests
     [Test]
     public void ApplyFormatting_HorizontalRule_EmptySelection_InsertsRuleOnItsOwnLine()
     {
-        // Caret between "a" and "b": the rule lands on its own line, breaking out of the text.
+        // Caret between "a" and "b": the rule lands on its own blank-line-separated line.
         var result = _service.ApplyFormatting("ab", MarkdownFormat.HorizontalRule, 1, 0);
-        result.Content.Should().Be("a\n---\nb");
+        result.Content.Should().Be("a\n\n---\n\nb");
         result.Content.Substring(result.SelectionStart, result.SelectionLength).Should().Be("---");
     }
 

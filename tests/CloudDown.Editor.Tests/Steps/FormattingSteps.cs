@@ -36,6 +36,13 @@ public sealed class FormattingSteps
         _selectionLength = unescaped.Length;
     }
 
+    [Given("the caret is at the start")]
+    public void GivenTheCaretIsAtTheStart()
+    {
+        _selectionStart = 0;
+        _selectionLength = 0;
+    }
+
     [When("I apply (.*) formatting")]
     public void WhenIApplyFormatting(MarkdownFormat format)
     {
@@ -43,6 +50,9 @@ public sealed class FormattingSteps
         _content = result.Content;
         _resultSelectionStart = result.SelectionStart;
         _resultSelectionLength = result.SelectionLength;
+        // The caret follows the operation, as in a real editor, so a second apply toggles correctly.
+        _selectionStart = result.SelectionStart;
+        _selectionLength = result.SelectionLength;
     }
 
     [Then("the content should be \"(.*)\"")]

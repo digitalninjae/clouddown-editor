@@ -25,4 +25,12 @@ public class MarkdownRenderingTests
     [TestCase("> quote", "<blockquote>\n<p>quote</p>\n</blockquote>")]
     public void ToHtml_RendersExpectedFragment(string markdown, string expectedHtml) =>
         _service.ToHtml(markdown).Trim().Should().Be(expectedHtml);
+
+    // A '---' directly under a paragraph line is a Setext H2 underline, not a thematic break, so the
+    // HorizontalRule operation must blank-line-separate its rules. These pin that its output renders
+    // as rules (and the wrapped text as a paragraph), never as a heading.
+    [TestCase("---\n\nthe cat sat\n\n---", "<hr />\n<p>the cat sat</p>\n<hr />")]
+    [TestCase("abc\n\n---", "<p>abc</p>\n<hr />")]
+    public void ToHtml_HorizontalRuleOutput_RendersAsThematicBreaks(string markdown, string expectedHtml) =>
+        _service.ToHtml(markdown).Trim().Should().Be(expectedHtml);
 }

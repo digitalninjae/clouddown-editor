@@ -343,9 +343,10 @@ public sealed partial class MarkdownService : IMarkdownService
 
     /// <summary>
     /// Inserts a horizontal rule (<c>---</c>). With a selection, the touched lines are wrapped with a
-    /// rule on its own line both before and after, and the wrapped text stays selected. With no
-    /// selection, a single rule is inserted on its own line at the caret (adding the surrounding
-    /// line breaks only where the caret is not already at a line boundary), with the rule selected.
+    /// rule before and after, each blank-line separated, and the wrapped text stays selected. With no
+    /// selection, a single rule is inserted on its own line at the caret. A <c>---</c> directly under
+    /// a paragraph line is a Setext heading underline, not a thematic break, so a blank line is always
+    /// emitted before a rule (and after, for symmetry) unless the content already provides one.
     /// </summary>
     private static FormattingResult InsertHorizontalRule(string content, int start, int length, string eol)
     {
@@ -356,17 +357,51 @@ public sealed partial class MarkdownService : IMarkdownService
             var spanStart = LineStart(content, start);
             var spanEnd = LineEnd(content, start + length - 1);
             var span = content[spanStart..spanEnd];
-            var spliced = Splice(content, spanStart, spanEnd - spanStart, $"{rule}{eol}{span}{eol}{rule}");
+            var lead = LeadingSeparator(content, spanStart, eol);
+            var trail = TrailingSeparator(content, spanEnd, eol);
+            // The span text is itself blank-line separated from each rule, so both rules parse as
+            // thematic breaks rather than turning the text into a Setext heading.
+            var replacement = $"{lead}{rule}{eol}{eol}{span}{eol}{eol}{rule}{trail}";
+            var spliced = Splice(content, spanStart, spanEnd - spanStart, replacement);
             // Re-select the original text, now sitting between the two rules.
-            return new FormattingResult(spliced, spanStart + rule.Length + eol.Length, span.Length);
+            return new FormattingResult(spliced, spanStart + lead.Length + rule.Length + 2 * eol.Length, span.Length);
         }
 
-        var atLineStart = start == 0 || content[start - 1] == '\n';
-        var atLineEnd = start == content.Length || content[start] is '\n' or '\r';
-        var before = atLineStart ? string.Empty : eol;
-        var after = atLineEnd ? string.Empty : eol;
+        var before = LeadingSeparator(content, start, eol);
+        var after = TrailingSeparator(content, start, eol);
         var inserted = Splice(content, start, 0, $"{before}{rule}{after}");
         return new FormattingResult(inserted, start + before.Length, rule.Length);
+    }
+
+    // The break(s) to emit before a rule inserted at pos so it sits on its own line with a blank line
+    // above it: nothing if a blank line is already there, one EOL if pos is at a line start (the line
+    // above is non-blank text), otherwise two (break out of the current line, then the blank line).
+    private static string LeadingSeparator(string content, int pos, string eol) =>
+        HasBlankLineBefore(content, pos) ? string.Empty
+        : pos > 0 && content[pos - 1] == '\n' ? eol
+        : eol + eol;
+
+    // Mirror of LeadingSeparator for the content after a rule: nothing at the document end or when a
+    // blank line already follows, one EOL when pos is at a line end, otherwise two.
+    private static string TrailingSeparator(string content, int pos, string eol) =>
+        HasBlankLineAfter(content, pos) ? string.Empty
+        : pos == content.Length || content[pos] is '\n' or '\r' ? eol
+        : eol + eol;
+
+    // A blank line sits immediately before pos (or pos is the document start), handling LF and CRLF.
+    private static bool HasBlankLineBefore(string content, int pos)
+    {
+        var before = content[..pos];
+        return before.Length == 0 || before.EndsWith("\n\n", StringComparison.Ordinal)
+            || before.EndsWith("\r\n\r\n", StringComparison.Ordinal);
+    }
+
+    // A blank line sits immediately after pos (or pos is the document end), handling LF and CRLF.
+    private static bool HasBlankLineAfter(string content, int pos)
+    {
+        var after = content[pos..];
+        return after.Length == 0 || after.StartsWith("\n\n", StringComparison.Ordinal)
+            || after.StartsWith("\r\n\r\n", StringComparison.Ordinal);
     }
 
     // Resolves the line ending to emit: the configured override, or the document's own ending.
