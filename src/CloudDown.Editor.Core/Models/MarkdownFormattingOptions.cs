@@ -12,4 +12,10 @@ public sealed class MarkdownFormattingOptions
     /// <see cref="LinkSelectionTarget.Url"/>.
     /// </summary>
     public LinkSelectionTarget LinkSelectionTarget { get; set; } = LinkSelectionTarget.Url;
+
+    /// <summary>
+    /// The line ending used for any newline a formatting operation emits. Defaults to
+    /// <see cref="LineEndingMode.Preserve"/>, which keeps the document's existing convention.
+    /// </summary>
+    public LineEndingMode LineEnding { get; set; } = LineEndingMode.Preserve;
 }

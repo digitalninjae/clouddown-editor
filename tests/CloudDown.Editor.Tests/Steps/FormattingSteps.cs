@@ -20,15 +20,20 @@ public sealed class FormattingSteps
     public void GivenTheLinkSelectionPreferenceIs(LinkSelectionTarget target) =>
         _service.FormattingOptions.LinkSelectionTarget = target;
 
+    [Given("the line ending is (.*)")]
+    public void GivenTheLineEndingIs(LineEndingMode mode) =>
+        _service.FormattingOptions.LineEnding = mode;
+
     [Given("the editor contains \"(.*)\"")]
-    public void GivenTheEditorContains(string content) => _content = content;
+    public void GivenTheEditorContains(string content) => _content = Unescape(content);
 
     [Given("the text \"(.*)\" is selected")]
     public void GivenTheTextIsSelected(string selection)
     {
-        _selectionStart = _content.IndexOf(selection, StringComparison.Ordinal);
+        var unescaped = Unescape(selection);
+        _selectionStart = _content.IndexOf(unescaped, StringComparison.Ordinal);
         _selectionStart.Should().BeGreaterThanOrEqualTo(0, "the selection must exist within the content");
-        _selectionLength = selection.Length;
+        _selectionLength = unescaped.Length;
     }
 
     [When("I apply (.*) formatting")]
@@ -41,9 +46,14 @@ public sealed class FormattingSteps
     }
 
     [Then("the content should be \"(.*)\"")]
-    public void ThenTheContentShouldBe(string expected) => _content.Should().Be(expected);
+    public void ThenTheContentShouldBe(string expected) => _content.Should().Be(Unescape(expected));
 
     [Then("the selected text should be \"(.*)\"")]
     public void ThenTheSelectedTextShouldBe(string expected) =>
-        _content.Substring(_resultSelectionStart, _resultSelectionLength).Should().Be(expected);
+        _content.Substring(_resultSelectionStart, _resultSelectionLength).Should().Be(Unescape(expected));
+
+    // Feature tables carry line breaks and tabs as literal escapes (e.g. "\r\n"); turn them into the
+    // real control characters so scenarios can describe multi-line content and endings inline.
+    private static string Unescape(string value) =>
+        value.Replace("\\r", "\r").Replace("\\n", "\n").Replace("\\t", "\t");
 }

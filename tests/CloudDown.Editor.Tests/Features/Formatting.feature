@@ -28,6 +28,17 @@ Scenario Outline: Applying inline formatting wraps the selection
         | the cat sat | cat       | Strikethrough | the ~~cat~~ sat   |
         | the cat sat | cat       | InlineCode    | the `cat` sat     |
 
+Scenario Outline: Re-applying inline code toggles it off
+    Given the editor contains "<content>"
+    And the text "<selection>" is selected
+    When I apply InlineCode formatting
+    Then the content should be "<expected>"
+
+    Examples:
+        | content       | selection | expected    |
+        | the `cat` sat | cat       | the cat sat |
+        | the `cat` sat | `cat`     | the cat sat |
+
 Scenario Outline: Re-applying inline emphasis toggles it off
     Given the editor contains "<content>"
     And the text "<selection>" is selected
@@ -99,3 +110,43 @@ Scenario: The text selection preference selects the link label instead of the ur
     When I apply Link formatting
     Then the content should be "see [Anthropic](url) here"
     And the selected text should be "Anthropic"
+
+Scenario Outline: Applying a blockquote toggles the line at its start
+    Given the editor contains "<content>"
+    And the text "<selection>" is selected
+    When I apply Blockquote formatting
+    Then the content should be "<expected>"
+
+    Examples:
+        | content       | selection | expected      |
+        | hello         | hello     | > hello       |
+        | > hello       | hello     | hello         |
+        | hello world   | world     | > hello world |
+
+Scenario: Applying a code block wraps the selection in fences and selects the language
+    Given the line ending is LF
+    And the editor contains "print()"
+    And the text "print()" is selected
+    When I apply CodeBlock formatting
+    Then the content should be "```lang\nprint()\n```"
+    And the selected text should be "lang"
+
+Scenario: Applying a horizontal rule to a selection wraps it between rules
+    Given the line ending is LF
+    And the editor contains "the cat sat"
+    And the text "the cat sat" is selected
+    When I apply HorizontalRule formatting
+    Then the content should be "---\nthe cat sat\n---"
+
+Scenario: Operations preserve the document's own line ending
+    Given the editor contains "alpha\r\nbeta"
+    And the text "alpha\r\nbeta" is selected
+    When I apply BulletList formatting
+    Then the content should be "- alpha\r\n- beta"
+
+Scenario: The line-ending override normalizes regardless of the content
+    Given the line ending is LF
+    And the editor contains "alpha\r\nbeta"
+    And the text "alpha\r\nbeta" is selected
+    When I apply BulletList formatting
+    Then the content should be "- alpha\n- beta"
