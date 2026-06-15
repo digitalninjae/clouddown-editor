@@ -66,6 +66,16 @@ public class SyntaxTokenizerTests
 
         // Nesting: an enclosing construct precedes the one nested inside it.
         yield return new TestCaseData("# A **b**", new[] { T(TokenKind.Heading, 0, 9), T(TokenKind.Bold, 4, 5) }).SetName("Bold nested in heading → outer then inner");
+
+        // Empty list items have no child block, so the marker span is derived by scanning the
+        // prefix. These exercise every branch: each bullet character, ordered '.'/')' delimiters,
+        // and the marker with/without a trailing space.
+        yield return new TestCaseData("- ", new[] { T(TokenKind.ListMarker, 0, 2) }).SetName("Empty '-' item → marker via scan");
+        yield return new TestCaseData("-", new[] { T(TokenKind.ListMarker, 0, 1) }).SetName("Bare '-' item → marker without trailing space");
+        yield return new TestCaseData("* ", new[] { T(TokenKind.ListMarker, 0, 2) }).SetName("Empty '*' item → marker via scan");
+        yield return new TestCaseData("+ ", new[] { T(TokenKind.ListMarker, 0, 2) }).SetName("Empty '+' item → marker via scan");
+        yield return new TestCaseData("1. ", new[] { T(TokenKind.ListMarker, 0, 3) }).SetName("Empty '1.' item → marker via scan");
+        yield return new TestCaseData("1) ", new[] { T(TokenKind.ListMarker, 0, 3) }).SetName("Empty '1)' item → marker via scan");
     }
 
     [TestCaseSource(nameof(Cases))]
@@ -75,4 +85,11 @@ public class SyntaxTokenizerTests
     [Test]
     public void Tokenize_Null_ReturnsEmpty() =>
         _tokenizer.Tokenize(null!).Should().BeEmpty();
+
+    [Test]
+    public void MarkdownToken_End_IsStartPlusLength()
+    {
+        var token = new MarkdownToken(TokenKind.Heading, 2, 3);
+        token.End.Should().Be(5);
+    }
 }
