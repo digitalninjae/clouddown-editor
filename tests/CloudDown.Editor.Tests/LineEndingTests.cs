@@ -54,10 +54,11 @@ public class LineEndingTests
     [Test]
     public void Preserve_CrlfContent_HorizontalRuleEmitsCrlf()
     {
+        // The rules are blank-line separated (so they parse as thematic breaks), all in CRLF.
         const string content = "x\r\ncat\r\ny";
         var start = content.IndexOf("cat", StringComparison.Ordinal);
         _service.ApplyFormatting(content, MarkdownFormat.HorizontalRule, start, 3)
-            .Content.Should().Be("x\r\n---\r\ncat\r\n---\r\ny");
+            .Content.Should().Be("x\r\n\r\n---\r\n\r\ncat\r\n\r\n---\r\n\r\ny");
     }
 
     [Test]
