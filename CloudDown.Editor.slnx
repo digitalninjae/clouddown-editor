@@ -19,6 +19,7 @@
         <File Path="docs/architecture/adr/0003-separate-core-project.md"/>
         <File Path="docs/architecture/adr/0004-central-package-management.md"/>
         <File Path="docs/architecture/adr/0005-core-may-depend-on-maui-graphics.md"/>
+        <File Path="docs/architecture/adr/0006-setext-heading-recognition.md"/>
     </Folder>
     <Folder Name="/src/">
         <Project Path="src/CloudDown.Editor.Core/CloudDown.Editor.Core.csproj"/>
