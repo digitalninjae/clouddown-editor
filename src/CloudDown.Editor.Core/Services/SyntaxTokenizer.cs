@@ -36,31 +36,21 @@ public sealed class SyntaxTokenizer : ISyntaxTokenizer
             if (node.Span.IsEmpty)
                 continue;
 
-            switch (node)
+            MarkdownToken? token = node switch
             {
-                case HeadingBlock:
-                    Add(tokens, TokenKind.Heading, node.Span);
-                    break;
-                case QuoteBlock:
-                    Add(tokens, TokenKind.Blockquote, node.Span);
-                    break;
+                HeadingBlock        => Token(TokenKind.Heading, node.Span),
+                QuoteBlock          => Token(TokenKind.Blockquote, node.Span),
                 // FencedCodeBlock derives from CodeBlock, so this catches both fenced and indented.
-                case CodeBlock:
-                    Add(tokens, TokenKind.Code, node.Span);
-                    break;
-                case ListItemBlock item:
-                    AddListMarker(tokens, content, item);
-                    break;
-                case EmphasisInline emphasis:
-                    Add(tokens, EmphasisKind(emphasis), node.Span);
-                    break;
-                case CodeInline:
-                    Add(tokens, TokenKind.Code, node.Span);
-                    break;
-                case LinkInline:
-                    Add(tokens, TokenKind.Link, node.Span);
-                    break;
-            }
+                CodeBlock           => Token(TokenKind.Code, node.Span),
+                ListItemBlock item  => ListMarkerToken(content, item),
+                EmphasisInline emph => Token(EmphasisKind(emph), node.Span),
+                CodeInline          => Token(TokenKind.Code, node.Span),
+                LinkInline          => Token(TokenKind.Link, node.Span),
+                _                   => null,
+            };
+
+            if (token is { } t)
+                tokens.Add(t);
         }
 
         return tokens;
@@ -73,16 +63,13 @@ public sealed class SyntaxTokenizer : ISyntaxTokenizer
         : emphasis.DelimiterCount >= 2 ? TokenKind.Bold
         : TokenKind.Italic;
 
-    private static void Add(List<MarkdownToken> tokens, TokenKind kind, SourceSpan span)
-    {
-        if (span.Length > 0)
-            tokens.Add(new MarkdownToken(kind, span.Start, span.Length));
-    }
+    private static MarkdownToken? Token(TokenKind kind, SourceSpan span) =>
+        span.Length > 0 ? new MarkdownToken(kind, span.Start, span.Length) : null;
 
     // A list item's source span covers the whole item, but SyntaxColors.ListMarker colors only the
     // marker. The marker runs from the item start up to where its first child block's content
     // begins (e.g. "- " or "1. "); fall back to scanning the prefix if the item has no child block.
-    private static void AddListMarker(List<MarkdownToken> tokens, string content, ListItemBlock item)
+    private static MarkdownToken? ListMarkerToken(string content, ListItemBlock item)
     {
         var markerStart = item.Span.Start;
         var contentStart = item.Count > 0 ? item[0].Span.Start : -1;
@@ -90,8 +77,7 @@ public sealed class SyntaxTokenizer : ISyntaxTokenizer
             contentStart = ScanMarkerEnd(content, item.Span);
 
         var length = contentStart - markerStart;
-        if (length > 0)
-            tokens.Add(new MarkdownToken(TokenKind.ListMarker, markerStart, length));
+        return length > 0 ? new MarkdownToken(TokenKind.ListMarker, markerStart, length) : null;
     }
 
     // Defensive fallback for an item with no child block: walk the bullet ('-', '+', '*') or the
