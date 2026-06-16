@@ -12,9 +12,9 @@ namespace CloudDown.Editor.Services;
 /// </summary>
 public sealed class SyntaxTokenizer : ISyntaxTokenizer
 {
-    // UsePreciseSourceLocation is what extends source spans to inline nodes (emphasis, code, links);
-    // block spans are tracked without it. This pipeline is independent of MarkdownService's render
-    // pipeline — tokenizing and rendering have different needs.
+    // Precise source locations are enabled so that inline nodes (emphasis, code, links) carry
+    // source spans, not just blocks. This pipeline is kept independent of MarkdownService's render
+    // pipeline because tokenizing and rendering have different needs.
     private readonly MarkdownPipeline _pipeline = new MarkdownPipelineBuilder()
         .UseAdvancedExtensions()
         .UsePreciseSourceLocation()
@@ -58,10 +58,12 @@ public sealed class SyntaxTokenizer : ISyntaxTokenizer
 
     // Markdig models bold/italic/strikethrough as a single EmphasisInline distinguished by its
     // delimiter: '~' is strikethrough; a doubled delimiter (**/__) is bold; a single one is italic.
-    private static TokenKind EmphasisKind(EmphasisInline emphasis) =>
-        emphasis.DelimiterChar == '~' ? TokenKind.Strikethrough
-        : emphasis.DelimiterCount >= 2 ? TokenKind.Bold
-        : TokenKind.Italic;
+    private static TokenKind EmphasisKind(EmphasisInline emphasis) => emphasis switch
+    {
+        { DelimiterChar: '~' } => TokenKind.Strikethrough,
+        { DelimiterCount: >= 2 } => TokenKind.Bold,
+        _ => TokenKind.Italic,
+    };
 
     private static MarkdownToken? Token(TokenKind kind, SourceSpan span) =>
         span.Length > 0 ? new MarkdownToken(kind, span.Start, span.Length) : null;

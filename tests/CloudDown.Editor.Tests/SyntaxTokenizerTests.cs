@@ -22,7 +22,7 @@ public class SyntaxTokenizerTests
 
     private static readonly MarkdownToken[] None = [];
 
-    public static IEnumerable<TestCaseData> Cases()
+    private static IEnumerable<TestCaseData> Cases()
     {
         // No syntax → no tokens.
         yield return new TestCaseData("", None).SetName("Empty string → no tokens");
