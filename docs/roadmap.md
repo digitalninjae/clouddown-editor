@@ -82,7 +82,7 @@ plain `net10.0`. This is the layer the handlers will lean on, so it lands first.
 
 - [x] Complete `ApplyFormatting` for **all 18 `MarkdownFormat` values** — insert, toggle-on,
       toggle-off/unwrap; empty selection, multi-line selection, idempotent round-trips
-- [ ] **Syntax tokenizer** service — maps text → styled ranges (token kind + start/length) for
+- [x] **Syntax tokenizer** service — maps text → styled ranges (token kind + start/length) for
       handlers to render; token-kind based, themed via `SyntaxColors` (theme-agnostic output)
 - [ ] **Undo/redo** history model — a UI-free command/edit stack
 - [x] Theme model — `EditorTheme` / `SyntaxColors` / `EditorThemeMode`
